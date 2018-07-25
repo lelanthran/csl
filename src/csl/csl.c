@@ -158,44 +158,40 @@ static char *get_next_token (csl_src_t *csl, FILE *inf)
    return xstr_dup (temps);
 }
 
-static srcnode_t *make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent);
+static bool make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent);
 
 static void read_list (csl_src_t *csl, FILE *inf, srcnode_t *parent)
 {
    parent->data.children = xvector_new ();
 
    while (1) {
-      srcnode_t *el = make_srcnode (csl, inf, parent);
-      if (!el)
+      if (!make_srcnode (csl, inf, parent))
          break;
-      xvector_ins_tail (parent->data.children, el);
    }
 
 }
 
-static srcnode_t *make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent)
+static bool make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent)
 {
-   srcnode_t *ret = NULL;
    char *str = NULL;
 
    str = get_next_token (csl, inf);
    if (!str || *str==')') {
       free (str);
-      return NULL;
+      return false;
    }
 
    if (*str == '(') {
-      ret = srcnode_new (csl, parent, TYPE_LIST, NULL);
-      read_list (csl, inf, ret);
+      srcnode_t *child = srcnode_new (csl, parent, TYPE_LIST, xvector_new ());
+      read_list (csl, inf, child);
+      xvector_ins_tail (parent->data.children, child);
    } else {
-      ret = srcnode_new (csl, parent, TYPE_STRING, str);
+      srcnode_new (csl, parent, TYPE_STRING, str);
    }
-
-   xvector_ins_tail (parent->data.children, ret);
 
    free (str);
 
-   return ret;
+   return true;
 }
 
 csl_src_t *csl_src_load (const char *fname)
