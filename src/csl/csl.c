@@ -16,6 +16,8 @@ struct csl_src_t {
    size_t   line;
    size_t   charpos;
    FILE    *inf;
+   int      last_char;
+   srcnode_t *root;
 };
 
 #define TYPE_START      1
@@ -40,14 +42,17 @@ void srcnode_del (srcnode_t *sn)
    if (!sn)
       return;
 
+   printf ("[%p] Entering \n", sn);
    free (sn->fname);
    if (sn->type==TYPE_LIST) {
+      printf ("[%p] Iterating \n", sn);
       xvector_iterate (sn->data.children, (void (*) (void *))srcnode_del);
       xvector_free (sn->data.children);
    } else {
       free (sn->data.token);
    }
 
+   printf ("[%p] Leaving \n", sn);
    free (sn);
 }
 
@@ -63,6 +68,7 @@ srcnode_t *srcnode_new (csl_src_t *csl, srcnode_t *parent, int type, void *d)
    ret->line = csl->line;
    ret->charpos = csl->charpos;
    ret->parent = parent;
+   ret->type = type;
 
    if (type==TYPE_LIST) {
       ret->data.children = (xvector_t *)d;
@@ -92,6 +98,12 @@ static int get_next_char (csl_src_t *csl, FILE *inf)
 {
    int ret = EOF;
 
+   if (csl->last_char && csl->last_char!=EOF) {
+      ret = csl->last_char;
+      csl->last_char = 0;
+      return ret;
+   }
+
    if (ferror (inf) || feof (inf))
       return EOF;
 
@@ -105,6 +117,11 @@ static int get_next_char (csl_src_t *csl, FILE *inf)
    }
 
    return ret;
+}
+
+static void push_back_char (csl_src_t *csl, int c)
+{
+   csl->last_char = c;
 }
 
 static char *get_next_token (csl_src_t *csl, FILE *inf)
@@ -135,16 +152,48 @@ static char *get_next_token (csl_src_t *csl, FILE *inf)
       c = get_next_char (csl, inf);
    }
 
+   if (c!=EOF)
+      push_back_char (csl, c);
+
    return xstr_dup (temps);
 }
 
-static srcnode_t *make_srcnode (csl_src_t *csl, FILE *inf)
+static srcnode_t *make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent);
+
+static void read_list (csl_src_t *csl, FILE *inf, srcnode_t *parent)
+{
+   parent->data.children = xvector_new ();
+
+   while (1) {
+      srcnode_t *el = make_srcnode (csl, inf, parent);
+      if (!el)
+         break;
+      xvector_ins_tail (parent->data.children, el);
+   }
+
+}
+
+static srcnode_t *make_srcnode (csl_src_t *csl, FILE *inf, srcnode_t *parent)
 {
    srcnode_t *ret = NULL;
    char *str = NULL;
-   xvector_t *children;
 
-   str = get_next_token;
+   str = get_next_token (csl, inf);
+   if (!str || *str==')') {
+      free (str);
+      return NULL;
+   }
+
+   if (*str == '(') {
+      ret = srcnode_new (csl, parent, TYPE_LIST, NULL);
+      read_list (csl, inf, ret);
+   } else {
+      ret = srcnode_new (csl, parent, TYPE_STRING, str);
+   }
+
+   xvector_ins_tail (parent->data.children, ret);
+
+   free (str);
 
    return ret;
 }
@@ -164,6 +213,12 @@ csl_src_t *csl_src_load (const char *fname)
 
    if (!ret->fname || !ret->inf)
       goto errorexit;
+
+   ret->root = srcnode_new (ret, NULL, TYPE_LIST, xvector_new ());
+
+   while (!feof (ret->inf) && !ferror (ret->inf)) {
+      make_srcnode (ret, ret->inf, ret->root);
+   }
 
    error = false;
 
@@ -185,6 +240,8 @@ void csl_src_del (csl_src_t *csl)
    free (csl->fname);
    if (csl->inf)
       fclose (csl->inf);
+
+   srcnode_del (csl->root);
 
    free (csl);
 }
