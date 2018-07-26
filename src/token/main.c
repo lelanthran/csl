@@ -19,10 +19,11 @@ int main (void)
    }
 
    for (size_t i=0; tokens[i]; i++) {
-      printf ("[%s:%zu,%zu] : [%s]\n", token_fname (tokens[i]),
-                                       token_line (tokens[i]),
-                                       token_charpos (tokens[i]),
-                                       token_string (tokens[i]));
+      printf ("[%s:%zu,%zu] %i : [%s]\n", token_fname (tokens[i]),
+                                          token_line (tokens[i]),
+                                          token_charpos (tokens[i]),
+                                          token_type (tokens[i]),
+                                          token_string (tokens[i]));
       token_del (tokens[i]);
    }
    free (tokens);

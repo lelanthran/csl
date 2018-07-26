@@ -6,6 +6,17 @@
 
 typedef struct token_t token_t;
 
+enum token_type_t {
+   token_UNKNOWN = 0,
+   token_STARTL,
+   token_ENDL,
+   token_STRING,
+   token_INT,
+   token_FLOAT,
+   token_SYMBOL,
+   token_OPERATOR
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,6 +28,8 @@ extern "C" {
    const char *token_fname (token_t *token);
    size_t      token_line (token_t *token);
    size_t      token_charpos (token_t *token);
+
+   enum token_type_t token_type (token_t *token);
 
 #ifdef __cplusplus
 };

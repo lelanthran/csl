@@ -9,11 +9,38 @@
 #include "xstring/xstring.h"
 
 struct token_t {
+   enum token_type_t type;
+
    char *string;
    char *fname;
    size_t line;
    size_t charpos;
 };
+
+static bool is_operator (int c)
+{
+   static const char *operators = "()+-*/!',<>=:";
+   return strchr (operators, (char)c);
+}
+
+static enum token_type_t guess_type (const char *str)
+{
+   if (!str || !*str)
+      return token_UNKNOWN;
+
+   if (str[0] == '(')         return token_STARTL;
+   if (str[0] == ')')         return token_ENDL;
+   if (str[0] == '"')         return token_STRING;
+   if (is_operator (str[0]))  return token_OPERATOR;
+   enum token_type_t type = token_SYMBOL;
+   if (isdigit (str[0]))
+      type = token_INT;
+
+   if (strchr (str, '.') && type==token_INT)
+      type = token_FLOAT;
+
+   return type;
+}
 
 static token_t *token_new (const char *str, const char *fname,
                                             size_t line,
@@ -33,6 +60,7 @@ static token_t *token_new (const char *str, const char *fname,
 
    ret->line = line;
    ret->charpos = charpos;
+   ret->type = guess_type (str);
 
    error = false;
 
@@ -43,12 +71,6 @@ errorexit:
    }
 
    return ret;
-}
-
-static bool is_operator (int c)
-{
-   static const char *operators = "()+-*/!',<>=:";
-   return strchr (operators, (char)c);
 }
 
 static token_t *get_next_token (FILE *inf, const char *fname,
@@ -102,6 +124,7 @@ static token_t *get_next_token (FILE *inf, const char *fname,
 
          if (c == '"') {
             in_str = false;
+            tmps[i] = '"';
             break;
          }
 
@@ -116,7 +139,7 @@ static token_t *get_next_token (FILE *inf, const char *fname,
 
       if (c == '"') {
          in_str = true;
-         i--;
+         tmps[i] = '"';
          continue;
       }
 
@@ -226,4 +249,8 @@ size_t token_charpos (token_t *token)
    return token ? token->charpos : 0;
 }
 
+enum token_type_t token_type (token_t *token)
+{
+   return token ? token->type : 0;
+}
 
