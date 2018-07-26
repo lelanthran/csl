@@ -1,6 +1,4 @@
 "one with spaces" 3.1459
 
-#load "./token/test2_input.csl"
-
 (one (two '(three four five)
    "six seven" eight:nine ten=11))

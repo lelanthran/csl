@@ -7,6 +7,7 @@
 
 #include "xvector/xvector.h"
 #include "xstring/xstring.h"
+#include "xerror/xerror.h"
 
 struct token_t {
    enum token_type_t type;
@@ -189,10 +190,32 @@ token_t **token_read (const char *fname)
    if (!(tmpv = xvector_new ()))
       goto errorexit;
 
-   if (!(inf = fopen (fname, "r")))
+   if (!(inf = fopen (fname, "r"))) {
+      XERROR ("Unable to open [%s]: %m\n", fname);
       goto errorexit;
+   }
 
-   while (tmpt = get_next_token (inf, fname, &line, &charpos)) {
+   while ((tmpt = get_next_token (inf, fname, &line, &charpos))) {
+
+      if (strcmp (tmpt->string, "#load")==0) {
+
+         token_t *load_fname = get_next_token (inf, fname, &line, &charpos);
+         char *tmpfname = strrchr (load_fname->string, '"');
+         if (tmpfname) *tmpfname = 0;
+         tmpfname = load_fname->string[0] == '"'
+                     ? &load_fname->string[1]
+                     : load_fname->string;
+
+         token_t **subv = token_read (tmpfname);
+
+         token_del (load_fname);
+
+         for (size_t i=0; subv && subv[i]; i++) {
+            xvector_ins_tail (tmpv, subv[i]);
+         }
+         free (subv);
+         continue;
+      }
       xvector_ins_tail (tmpv, tmpt);
    }
 
