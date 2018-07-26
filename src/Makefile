@@ -7,7 +7,8 @@ LIBNAME=csl
 # subdirectories will have a main.c file that runs a test on that module.
 #
 SUBPROJS=\
-	csl
+	csl\
+	token
 
 # Your extra include directories, for headers that are not in the path.
 MYINCLUDEDIRS+= -I$(HOME)/include -lxc

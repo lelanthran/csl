@@ -1,0 +1,229 @@
+#include <stdbool.h>
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
+
+#include "token/token.h"
+
+#include "xvector/xvector.h"
+#include "xstring/xstring.h"
+
+struct token_t {
+   char *string;
+   char *fname;
+   size_t line;
+   size_t charpos;
+};
+
+static token_t *token_new (const char *str, const char *fname,
+                                            size_t line,
+                                            size_t charpos)
+{
+   bool error = true;
+   token_t *ret = NULL;
+
+   if (!(ret = calloc (1, sizeof *ret)))
+      goto errorexit;
+
+   ret->string = xstr_dup (str);
+   ret->fname = xstr_dup (fname);
+
+   if (!ret->string || !ret->fname)
+      goto errorexit;
+
+   ret->line = line;
+   ret->charpos = charpos;
+
+   error = false;
+
+errorexit:
+   if (error) {
+      token_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+static bool is_operator (int c)
+{
+   static const char *operators = "()+-*/!',<>=:";
+   return strchr (operators, (char)c);
+}
+
+static token_t *get_next_token (FILE *inf, const char *fname,
+                                           size_t *line,
+                                           size_t *cpos)
+{
+   bool error = true;
+   token_t *ret = NULL;
+   char tmps[1024];
+   bool in_str = false;
+   int c = ' ';
+
+   size_t ll, cp;
+
+   ll = line ? *line : 0;
+   cp = cpos ? *cpos : 0;
+
+   memset (tmps, 0, sizeof tmps);
+
+   // Skip all whitespace
+   while (!feof (inf) && !ferror (inf)) {
+      c = fgetc (inf);
+      if (!(isspace (c)))
+         break;
+   }
+
+   if (isspace (c))
+      goto errorexit;
+
+   ungetc (c, inf);
+
+   for (size_t i=0; i<sizeof tmps; i++) {
+
+      if (ferror (inf) || feof (inf))
+         break;
+
+      if (i >= (sizeof tmps - 1))
+         goto errorexit;
+
+      c = fgetc (inf);
+      if (c == '\n') {
+         ll++; cp = 1;
+      } else {
+         cp++;
+      }
+
+      if (c==EOF)
+         break;
+
+      if (in_str) {
+
+         if (c == '"') {
+            in_str = false;
+            break;
+         }
+
+         if (c == '\\') {
+            c = fgetc (inf);
+            cp++;
+         }
+
+         tmps[i] = (char)c;
+         continue;
+      }
+
+      if (c == '"') {
+         in_str = true;
+         i--;
+         continue;
+      }
+
+      if (is_operator (c)) {
+         if (i) {
+            ungetc (c, inf);
+            cp--;
+         } else {
+            tmps[0] = (char)c;
+         }
+         break;
+      }
+
+      if (isspace (c))
+         break;
+
+      tmps[i] = (char)c;
+   }
+
+   if (!(ret = token_new (tmps, fname, (*line), (*cpos))))
+      goto errorexit;
+
+   error = false;
+errorexit:
+
+   if (error) {
+      token_del (ret);
+      ret = NULL;
+   }
+
+   if (line) (*line) = ll;
+   if (cpos) (*cpos) = cp;
+
+   return ret;
+}
+
+token_t **token_read (const char *fname)
+{
+   bool error = true;
+   FILE *inf = NULL;
+   token_t **ret = NULL;
+   xvector_t *tmpv = NULL;
+   token_t *tmpt = NULL;
+
+   size_t line = 0, charpos = 0;
+
+   if (!(tmpv = xvector_new ()))
+      goto errorexit;
+
+   if (!(inf = fopen (fname, "r")))
+      goto errorexit;
+
+   while (tmpt = get_next_token (inf, fname, &line, &charpos)) {
+      xvector_ins_tail (tmpv, tmpt);
+   }
+
+   if (!(ret = xvector_native (tmpv)))
+      goto errorexit;
+
+   error = false;
+
+errorexit:
+
+   xvector_free (tmpv);
+
+   if (inf)
+      fclose (inf);
+
+   if (error) {
+      for (size_t i=0; ret && ret[i]; i++) {
+         token_del (ret[i]);
+      }
+      free (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+void token_del (token_t *token)
+{
+   if (!token)
+      return;
+
+   free (token->string);
+   free (token->fname);
+   free (token);
+}
+
+const char *token_string (token_t *token)
+{
+   return token ? token->string : NULL;
+}
+
+const char *token_fname (token_t *token)
+{
+   return token ? token->fname : NULL;
+}
+
+size_t token_line (token_t *token)
+{
+   return token ? token->line : 0;
+}
+
+size_t token_charpos (token_t *token)
+{
+   return token ? token->charpos : 0;
+}
+
+
