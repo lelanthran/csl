@@ -24,6 +24,8 @@ struct atom_t {
 };
 
 
+static void atom_del (atom_t *atom);
+
 typedef atom_t *(atom_newfunc_t) (atom_t *dst, const char *);
 typedef void (atom_delfunc_t) (atom_t *);
 
@@ -112,9 +114,11 @@ void atom_del_list (atom_t *atom)
    xvector_t *tmp = atom->data;
    size_t len = XVECT_LENGTH (tmp);
 
+   XERROR ("deleting [%zu] elements\n", len);
+
    for (size_t i=0; i<len; i++) {
       atom_t *a = XVECT_INDEX (tmp, i);
-      atom_del_list (a);
+      atom_del (a);
    }
    xvector_free (tmp);
 }
@@ -158,6 +162,7 @@ static void atom_del (atom_t *atom)
    if (funcs) {
       funcs->del_fptr (atom);
    }
+
    free (atom);
 }
 
@@ -254,6 +259,9 @@ static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
             goto errorexit;
       }
 
+      if (type==atom_ENDL)
+         return true;
+
       if (!(na = atom_new (type, string)))
          goto errorexit;
 
@@ -265,12 +273,11 @@ static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
             goto errorexit;
          }
 
-         if (!(xvector_ins_tail (parent->data, na)))
-            goto errorexit;
       }
 
-      if (type==atom_ENDL)
-         return true;
+      if (!(xvector_ins_tail (parent->data, na)))
+         goto errorexit;
+
    }
 
    error = false;
