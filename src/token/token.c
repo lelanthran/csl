@@ -214,6 +214,7 @@ token_t **token_read (const char *fname)
             xvector_ins_tail (tmpv, subv[i]);
          }
          free (subv);
+         token_del (tmpt);
          continue;
       }
       xvector_ins_tail (tmpv, tmpt);
