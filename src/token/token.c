@@ -80,9 +80,11 @@ static token_t *get_next_token (FILE *inf, const char *fname,
 {
    bool error = true;
    token_t *ret = NULL;
-   char tmps[1024];
    bool in_str = false;
    int c = ' ';
+
+   // Make this smaller if your program crashes while in this function.
+   char tmps[8192];
 
    size_t ll, cp;
 
@@ -158,6 +160,11 @@ static token_t *get_next_token (FILE *inf, const char *fname,
          break;
 
       tmps[i] = (char)c;
+   }
+
+   if (in_str) {
+      XERROR ("End of input while reading string [%s]\n", tmps);
+      goto errorexit;
    }
 
    if (!(ret = token_new (tmps, fname, (*line), (*cpos))))
