@@ -2,6 +2,7 @@
 #ifndef H_PARSER
 #define H_PARSER
 
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "token/token.h"
@@ -26,6 +27,8 @@ extern "C" {
    void parser_del (parser_tree_t *ptree);
 
    bool parser_parse (parser_tree_t *ptree, token_t **tokens);
+
+   void parser_print (parser_tree_t *ptree, size_t depth, FILE *outf);
 
 
 #ifdef __cplusplus

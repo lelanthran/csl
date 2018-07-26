@@ -32,6 +32,8 @@ int main (void)
       goto errorexit;
    }
 
+   parser_print (parser, 1, stdout);
+
 #if 0
    for (size_t i=0; tokens[i]; i++) {
       printf ("[%s:%zu,%zu] %i : [%s]\n", token_fname (tokens[i]),

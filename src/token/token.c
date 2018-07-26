@@ -56,7 +56,7 @@ static token_t *token_new (const char *str, const char *fname,
    ret->string = xstr_dup (str);
    ret->fname = xstr_dup (fname);
 
-   if (!ret->string || !ret->fname)
+   if (!ret->string || !ret->string[0] || !ret->fname)
       goto errorexit;
 
    ret->line = line;
