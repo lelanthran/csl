@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "token/token.h"
+#include "parser/parser.h"
 
 #include "xerror/xerror.h"
+
 
 #define TESTFILE     ("token/test_input.csl")
 
@@ -13,12 +14,25 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
+   parser_tree_t *parser = parser_new ();
+
    token_t **tokens = token_read (TESTFILE);
    if (!tokens) {
       XERROR ("Unable to read tokens from [%s]\n", TESTFILE);
       goto errorexit;
    }
 
+   if (!parser) {
+      XERROR ("Unable to create parse-tree\n");
+      goto errorexit;
+   }
+
+   if (!parser_parse (parser, tokens)) {
+      XERROR ("Failed to parse tokens\n");
+      goto errorexit;
+   }
+
+#if 0
    for (size_t i=0; tokens[i]; i++) {
       printf ("[%s:%zu,%zu] %i : [%s]\n", token_fname (tokens[i]),
                                           token_line (tokens[i]),
@@ -28,12 +42,20 @@ int main (void)
       token_del (tokens[i]);
    }
    free (tokens);
+#endif
 
    ret = EXIT_SUCCESS;
 
 errorexit:
 
+   parser_del (parser);
+   for (size_t i=0; tokens[i]; i++) {
+      token_del (tokens[i]);
+   }
+   free (tokens);
+
    xerror_set_logfile (NULL);
+
    return ret;
 }
 

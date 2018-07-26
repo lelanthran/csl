@@ -4,8 +4,19 @@
 
 #include <stdbool.h>
 
+#include "token/token.h"
 
-typedef struct parse_tree_t parser_tree_t;
+enum atom_type_t {
+   atom_UNKNOWN = 0,
+   atom_LIST,
+   atom_STRING,
+   atom_SYMBOL,
+   atom_INT,
+   atom_FLOAT,
+   atom_ENDL
+};
+
+typedef struct parser_tree_t parser_tree_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +25,7 @@ extern "C" {
    parser_tree_t *parser_new (void);
    void parser_del (parser_tree_t *ptree);
 
-   bool parser_parse (token_t **tokens);
+   bool parser_parse (parser_tree_t *ptree, token_t **tokens);
 
 
 #ifdef __cplusplus
