@@ -14,6 +14,7 @@ enum atom_type_t {
    atom_SYMBOL,
    atom_INT,
    atom_FLOAT,
+   atom_FFI,
    atom_ENDL
 };
 
@@ -27,6 +28,8 @@ extern "C" {
    void parser_del (parser_tree_t *ptree);
 
    bool parser_parse (parser_tree_t *ptree, token_t **tokens);
+
+   bool parser_compile (parser_tree_t *ptree);
 
    void parser_print (parser_tree_t *ptree, size_t depth, FILE *outf);
 

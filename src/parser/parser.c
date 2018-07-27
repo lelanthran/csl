@@ -13,7 +13,7 @@
 typedef struct atom_t atom_t;
 struct atom_t {
    // Tells us what type of data we are dealing with
-   int   type;
+   enum atom_type_t type;
 
    // We could use a union here (getting strong type guarantees) but it
    // means more onerous dispatching for functions on that data. This way
@@ -85,7 +85,7 @@ atom_t *atom_new_float (atom_t *dst, const char *str)
 
    double tmp;
    if (sscanf (str, "%lf", &tmp)!=1) {
-      XERROR ("[%s] is not an integer\n", str);
+      XERROR ("[%s] is not a float\n", str);
       goto errorexit;
    }
 
