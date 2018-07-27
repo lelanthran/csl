@@ -7,17 +7,6 @@
 
 #include "token/token.h"
 
-enum atom_type_t {
-   atom_UNKNOWN = 0,
-   atom_LIST,
-   atom_STRING,
-   atom_SYMBOL,
-   atom_INT,
-   atom_FLOAT,
-   atom_FFI,
-   atom_ENDL
-};
-
 typedef struct parser_tree_t parser_tree_t;
 
 #ifdef __cplusplus
