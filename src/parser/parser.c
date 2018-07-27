@@ -12,21 +12,12 @@
 #include "xerror/xerror.h"
 
 
-struct parser_tree_t {
-
-   atom_t *root;
-
-};
-
-parser_tree_t *parser_new (void)
+atom_t *parser_new (void)
 {
    bool error = true;
-   parser_tree_t *ret = NULL;
+   atom_t *ret = NULL;
 
-   if (!(ret = calloc (1, sizeof *ret)))
-      goto errorexit;
-
-   if (!(ret->root = atom_new (atom_LIST, NULL)))
+   if (!(ret = atom_new (atom_LIST, NULL)))
       goto errorexit;
 
    error = false;
@@ -41,13 +32,12 @@ errorexit:
    return ret;
 }
 
-void parser_del (parser_tree_t *ptree)
+void parser_del (atom_t *ptree)
 {
    if (!ptree)
       return;
 
-   atom_del (ptree->root);
-   free (ptree);
+   atom_del (ptree);
 }
 
 static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
@@ -101,7 +91,7 @@ errorexit:
    return !error;
 }
 
-bool parser_parse (parser_tree_t *ptree, token_t **tokens)
+bool parser_parse (atom_t *ptree, token_t **tokens)
 {
    bool error = true;
    size_t index = 0;
@@ -110,7 +100,7 @@ bool parser_parse (parser_tree_t *ptree, token_t **tokens)
    for (ntokens=0; tokens[ntokens]; ntokens++)
       ;
 
-   if (!rparser (ptree->root, tokens, &index, ntokens))
+   if (!rparser (ptree, tokens, &index, ntokens))
       goto errorexit;
 
    error = false;
@@ -120,7 +110,7 @@ errorexit:
    return !error;
 }
 
-void parser_print (parser_tree_t *ptree, size_t depth, FILE *outf)
+void parser_print (atom_t *ptree, size_t depth, FILE *outf)
 {
    if (!outf)
       outf = stdout;
@@ -128,5 +118,5 @@ void parser_print (parser_tree_t *ptree, size_t depth, FILE *outf)
    if (!ptree)
       return;
 
-   atom_print (ptree->root, depth, outf);
+   atom_print (ptree, depth, outf);
 }

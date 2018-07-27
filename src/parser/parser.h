@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "token/token.h"
+#include "parser/atom.h"
 
 typedef struct parser_tree_t parser_tree_t;
 
@@ -13,14 +14,14 @@ typedef struct parser_tree_t parser_tree_t;
 extern "C" {
 #endif
 
-   parser_tree_t *parser_new (void);
-   void parser_del (parser_tree_t *ptree);
+   atom_t *parser_new (void);
+   void parser_del (atom_t *ptree);
 
-   bool parser_parse (parser_tree_t *ptree, token_t **tokens);
+   bool parser_parse (atom_t *ptree, token_t **tokens);
 
-   bool parser_compile (parser_tree_t *ptree);
+   bool parser_compile (atom_t *ptree);
 
-   void parser_print (parser_tree_t *ptree, size_t depth, FILE *outf);
+   void parser_print (atom_t *ptree, size_t depth, FILE *outf);
 
 
 #ifdef __cplusplus

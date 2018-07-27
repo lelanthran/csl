@@ -14,7 +14,7 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
-   parser_tree_t *parser = parser_new ();
+   atom_t *parser = parser_new ();
 
    token_t **tokens = token_read (TESTFILE);
    if (!tokens) {
