@@ -9,7 +9,8 @@ LIBNAME=csl
 SUBPROJS=\
 	csl\
 	token\
-	parser
+	parser\
+	rt
 
 # Your extra include directories, for headers that are not in the path.
 MYINCLUDEDIRS+= -I$(HOME)/include -lxc

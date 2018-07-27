@@ -36,6 +36,8 @@ extern "C" {
    atom_t *atom_new (enum atom_type_t type, const char *string);
    void atom_print (atom_t *atom, size_t depth, FILE *outf);
 
+   atom_t *atom_list_new (void);
+
 #ifdef __cplusplus
 }
 #endif

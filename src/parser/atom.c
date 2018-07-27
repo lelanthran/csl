@@ -222,3 +222,18 @@ void atom_print (atom_t *atom, size_t depth, FILE *outf)
    }
 }
 
+atom_t *atom_list_new (void)
+{
+   atom_t *ret = NULL;
+
+   if (!(calloc (1, sizeof *ret)))
+      return NULL;
+
+   if (!(atom_new_list (ret, NULL))) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
