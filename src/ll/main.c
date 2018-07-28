@@ -7,6 +7,11 @@
 #include "xerror/xerror.h"
 #include "xstring/xstring.h"
 
+static void printstr (void *string)
+{
+   printf (" Printing [%s]\n", (char *)string);
+}
+
 int main (void)
 {
    int ret = EXIT_FAILURE;
@@ -40,20 +45,32 @@ int main (void)
       printf ("Stored [%s]\n", tmp);
    }
 
-   ret = EXIT_SUCCESS;
+   ll_iterate (ll, free);
+   ll_del (ll);
+   ll = ll_new ();
 
-   size_t nitems;
+   for (int i=tstrings_len-1; i>0; i--) {
+      char *tmp = xstr_dup (tstrings[i]);
+      if (!tmp) {
+         XERROR ("Out or memory allocating [%s]\n", tstrings[i]);
+         goto errorexit;
+      }
+
+      if (!(ll_ins_tail (&ll, tmp))) {
+         XERROR ("Failed to append [%s] to ll\n", tmp);
+         goto errorexit;
+      }
+
+      printf ("Stored [%s]\n", tmp);
+   }
+
+   ll_iterate (ll, printstr);
+
+   ret = EXIT_SUCCESS;
 
 errorexit:
 
-   nitems = ll_length (ll);
-
-   for (size_t i=0; i<nitems; i++) {
-      char *tmp = ll_index (ll, i);
-      printf ("Freeing [%s]\n", tmp);
-      free (tmp);
-   }
-
+   ll_iterate (ll, free);
    ll_del (ll);
 
    xerror_set_logfile (NULL);

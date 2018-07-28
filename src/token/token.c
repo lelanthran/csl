@@ -4,8 +4,8 @@
 #include <ctype.h>
 
 #include "token/token.h"
+#include "ll/ll.h"
 
-#include "xvector/xvector.h"
 #include "xstring/xstring.h"
 #include "xerror/xerror.h"
 
@@ -189,12 +189,12 @@ token_t **token_read (const char *fname)
    bool error = true;
    FILE *inf = NULL;
    token_t **ret = NULL;
-   xvector_t *tmpv = NULL;
+   void **tmpv = NULL;
    token_t *tmpt = NULL;
 
    size_t line = 0, charpos = 0;
 
-   if (!(tmpv = xvector_new ()))
+   if (!(tmpv = ll_new ()))
       goto errorexit;
 
    if (!(inf = fopen (fname, "r"))) {
@@ -218,23 +218,22 @@ token_t **token_read (const char *fname)
          token_del (load_fname);
 
          for (size_t i=0; subv && subv[i]; i++) {
-            xvector_ins_tail (tmpv, subv[i]);
+            ll_ins_tail (&tmpv, subv[i]);
          }
          free (subv);
          token_del (tmpt);
          continue;
       }
-      xvector_ins_tail (tmpv, tmpt);
+      ll_ins_tail (&tmpv, tmpt);
    }
 
-   if (!(ret = xvector_native (tmpv)))
-      goto errorexit;
+   ret = ll_copy (tmpv, 0, (size_t)-1);
 
    error = false;
 
 errorexit:
 
-   xvector_free (tmpv);
+   ll_del (tmpv);
 
    if (inf)
       fclose (inf);

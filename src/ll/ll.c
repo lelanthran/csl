@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include "ll/ll.h"
 
@@ -15,6 +17,35 @@ void ll_del (void **ll)
 
    free (ll);
 }
+
+void **ll_copy (void **src, size_t from_index, size_t to_index)
+{
+   size_t nitems;
+   void **ret = ll_new ();
+   bool error = true;
+
+   if (!src)
+      return NULL;
+
+   nitems = ll_length (src);
+
+   for (size_t i=from_index; i>=from_index && i<to_index && i<nitems; i++) {
+      if (!(ll_ins_tail (&ret, src[i])))
+         goto errorexit;
+   }
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      ll_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
 
 size_t ll_length (void **ll)
 {
@@ -36,6 +67,17 @@ void *ll_index (void **ll, size_t i)
    return ll[i];
 }
 
+void ll_iterate (void **ll, void (*fptr) (void *))
+{
+   if (!ll || !fptr)
+      return;
+
+   for (size_t i=0; ll[i]; i++) {
+      fptr (ll[i]);
+   }
+}
+
+
 void *ll_ins_tail (void ***ll, const void *el)
 {
    size_t nitems = 0;
@@ -52,8 +94,30 @@ void *ll_ins_tail (void ***ll, const void *el)
 
    (*ll) = tmp;
 
-  (*ll)[nitems] = el;
-  (*ll)[nitems + 1] = 0;
+   (*ll)[nitems] = el;
+   (*ll)[nitems + 1] = 0;
+
+   return (*ll)[nitems];
+}
+
+void *ll_ins_head (void ***ll, const void *el)
+{
+   size_t nitems = 0;
+
+   if (!ll || !(*ll) || !el)
+      return NULL;
+
+   nitems = ll_length (*ll);
+   size_t newsize = nitems + 2;
+
+   void **tmp = realloc ((*ll), newsize * sizeof (void *));
+   if (!tmp)
+      return NULL;
+
+   (*ll) = tmp;
+
+   memmove (&(*ll)[1], &(*ll)[0], nitems + 1);
+   (*ll)[0] = (void *)el;
 
    return (*ll)[nitems];
 }
