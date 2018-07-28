@@ -58,6 +58,11 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
 }
 
 const atom_t *rt_list_eval (rt_t *rt, atom_t *atom);
+// TODO:
+// if type==FFI
+//    call libffi
+// else
+//    funcall (car (atom), cdr (atom))
 
 atom_t *rt_eval (rt_t *rt, atom_t *atom)
 {
