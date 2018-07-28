@@ -3,6 +3,7 @@
 #define H_ATOM
 
 #include <stdio.h>
+#include <stdint.h>
 
 enum atom_type_t {
    atom_UNKNOWN = 0,
@@ -28,7 +29,7 @@ struct atom_t {
 
    // Reserved for internal use, do not access
    char buffer[18];
-
+   uint8_t flags;
 };
 
 #ifdef __cplusplus

@@ -9,6 +9,8 @@
 #include "xerror/xerror.h"
 #include "xstring/xstring.h"
 
+#define FLAG_BORROWED      (1 << 0)
+
 typedef atom_t *(atom_newfunc_t) (atom_t *dst, const char *);
 typedef void (atom_delfunc_t) (atom_t *);
 typedef void (atom_prnfunc_t) (atom_t *, size_t, FILE *);
@@ -248,6 +250,11 @@ void atom_del (atom_t *atom)
    if (!atom)
       return;
 
+   if (atom->flags & FLAG_BORROWED) {
+      free (atom);
+      return;
+   }
+
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
    if (funcs) {
       funcs->del_fptr (atom);
@@ -355,9 +362,14 @@ const atom_t *atom_list_cdr (const atom_t *atom)
    if (atom->type!=atom_LIST)
       return NULL;
 
-   void **tmp = atom->data;
-#warning Note to change from xvector_t to native arrays
-   return NULL;
+   atom_t *ret = NULL;
+   if (!(ret = calloc (1, sizeof *ret)))
+      return NULL;
+
+   ret->data = &atom->data[1];
+   ret->flags |= FLAG_BORROWED;
+
+   return ret;
 }
 
 const char *atom_to_string (const atom_t *atom)
