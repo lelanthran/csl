@@ -347,29 +347,13 @@ size_t atom_list_length (const atom_t *atom)
    return ll_length (tmp);
 }
 
-const atom_t *atom_list_car (const atom_t *atom)
+const atom_t *atom_list_index (const atom_t *atom, size_t index)
 {
 
    if (atom->type!=atom_LIST)
       return NULL;
 
-   void **tmp = atom->data;
-   return ll_index (tmp, 0);
-}
-
-const atom_t *atom_list_cdr (const atom_t *atom)
-{
-   if (atom->type!=atom_LIST)
-      return NULL;
-
-   atom_t *ret = NULL;
-   if (!(ret = calloc (1, sizeof *ret)))
-      return NULL;
-
-   ret->data = &atom->data[1];
-   ret->flags |= FLAG_BORROWED;
-
-   return ret;
+   return ll_index (atom->data, index);
 }
 
 const char *atom_to_string (const atom_t *atom)

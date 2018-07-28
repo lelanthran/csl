@@ -14,8 +14,8 @@ extern "C" {
    void *ll_index (void **ll, size_t i);
    void ll_iterate (void **ll, void (*fptr) (void *));
 
-   void *ll_ins_tail (void ***ll, const void *el);
-   void *ll_ins_head (void ***ll, const void *el);
+   void *ll_ins_tail (void ***ll, void *el);
+   void *ll_ins_head (void ***ll, void *el);
 
 
 #ifdef __cplusplus

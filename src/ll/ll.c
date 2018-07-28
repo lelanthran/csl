@@ -78,7 +78,7 @@ void ll_iterate (void **ll, void (*fptr) (void *))
 }
 
 
-void *ll_ins_tail (void ***ll, const void *el)
+void *ll_ins_tail (void ***ll, void *el)
 {
    size_t nitems = 0;
 
@@ -100,7 +100,7 @@ void *ll_ins_tail (void ***ll, const void *el)
    return (*ll)[nitems];
 }
 
-void *ll_ins_head (void ***ll, const void *el)
+void *ll_ins_head (void ***ll, void *el)
 {
    size_t nitems = 0;
 
@@ -117,7 +117,7 @@ void *ll_ins_head (void ***ll, const void *el)
    (*ll) = tmp;
 
    memmove (&(*ll)[1], &(*ll)[0], nitems + 1);
-   (*ll)[0] = (void *)el;
+   (*ll)[0] = el;
 
    return (*ll)[nitems];
 }

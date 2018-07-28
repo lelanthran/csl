@@ -46,7 +46,7 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
    const atom_t *entry = NULL;
 
    for (size_t i=0; i<len; i++) {
-      if ((entry = atom_list_car (atom)))
+      if ((entry = atom_list_index (atom, 0)))
          break;
    }
    if (!entry) {
@@ -54,7 +54,7 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
       return NULL;
    }
 
-   return atom_list_car (atom_list_cdr (entry));
+   return atom_list_index (entry, 1);
 }
 
 const atom_t *rt_list_eval (rt_t *rt, atom_t *atom)

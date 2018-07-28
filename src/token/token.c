@@ -227,7 +227,7 @@ token_t **token_read (const char *fname)
       ll_ins_tail (&tmpv, tmpt);
    }
 
-   ret = ll_copy (tmpv, 0, (size_t)-1);
+   ret = (token_t **)ll_copy (tmpv, 0, (size_t)-1);
 
    error = false;
 
