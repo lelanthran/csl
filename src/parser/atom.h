@@ -26,6 +26,9 @@ struct atom_t {
    // lookup table.
    void *data;
 
+   // Reserved for internal use, do not access
+   char buffer[18];
+
 };
 
 #ifdef __cplusplus

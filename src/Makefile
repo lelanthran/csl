@@ -8,6 +8,7 @@ LIBNAME=csl
 #
 SUBPROJS=\
 	csl\
+	ll\
 	token\
 	parser\
 	rt
