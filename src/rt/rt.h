@@ -19,6 +19,8 @@ extern "C" {
    void rt_del (rt_t *rt);
 
 
+   atom_t *rt_eval (rt_t *rt, atom_t *atom);
+
 #ifdef __cplusplus
 };
 #endif

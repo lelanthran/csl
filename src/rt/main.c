@@ -15,6 +15,12 @@ int main (void)
    int ret = EXIT_FAILURE;
 
    atom_t *parser = parser_new ();
+   rt_t *rt = NULL;
+
+   if (!(rt = rt_new ())) {
+      XERROR ("Could not create runtime\n");
+      goto errorexit;
+   }
 
    token_t **tokens = token_read (TESTFILE);
    if (!tokens) {
@@ -34,12 +40,15 @@ int main (void)
 
    parser_print (parser, 1, stdout);
 
+
    ret = EXIT_SUCCESS;
 
 errorexit:
 
    parser_del (parser);
-   for (size_t i=0; tokens[i]; i++) {
+   rt_del (rt);
+
+   for (size_t i=0; tokens && tokens[i]; i++) {
       token_del (tokens[i]);
    }
    free (tokens);
