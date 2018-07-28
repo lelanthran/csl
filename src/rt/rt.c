@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "rt/rt.h"
+#include "ll/ll.h"
 
 #include "xerror/xerror.h"
 
@@ -40,7 +41,7 @@ void rt_del (rt_t *rt)
    free (rt);
 }
 
-const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
+atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
 {
    size_t len = atom_list_length (rt->symbols);
    const atom_t *entry = NULL;
@@ -54,17 +55,46 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
       return NULL;
    }
 
-   return atom_list_index (entry, 1);
+   return atom_dup (atom_list_index (entry, 1));
 }
 
-const atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
-// TODO:
-// if type==FFI
-//    call libffi
-// else
-//    funcall (car (atom), cdr (atom))
+static atom_t *rt_funcall (atom_t *func, atom_t *argslist)
 {
-#warning This function incomplete
+
+}
+
+static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
+{
+   atom_t *ret = NULL;
+   atom_t *func = NULL;
+
+   void **args = NULL;
+   size_t nargs = 0;
+
+   if (!(func = rt_eval_symbol (rt, ll_index (atom->data, 0))))
+      goto errorexit;
+
+   args = ll_new ();
+   nargs = ll_length (atom->data) - 1;
+
+   for (size_t i=0; i<nargs; i++) {
+      atom_t *tmp = rt_eval (rt, ll_index (atom->data, i));
+      if (!tmp) {
+         XERROR ("Fatal error during evaluation\n");
+         goto errorexit;
+      }
+      if (!ll_ins_tail (&args, tmp))
+         goto errorexit;
+   }
+
+   if (func->type==atom_FFI) {
+      // TODO: Implement FFI
+   } else {
+      ret = rt_funcall (func, args);
+   }
+
+errorexit:
+   return ret;
 }
 
 atom_t *rt_eval (rt_t *rt, atom_t *atom)
