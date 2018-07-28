@@ -5,7 +5,7 @@
 
 #include "parser/atom.h"
 
-#include "xvector/xvector.h"
+#include "ll/ll.h"
 #include "xerror/xerror.h"
 #include "xstring/xstring.h"
 
@@ -17,7 +17,7 @@ typedef atom_t *(atom_dupfunc_t) (atom_t *dst, const atom_t *);
 static atom_t *a_new_list (atom_t *dst, const char *str)
 {
    str = str;
-   dst->data = xvector_new ();
+   dst->data = ll_new ();
    return dst;
 }
 
@@ -90,14 +90,14 @@ errorexit:
 
 static void a_del_list (atom_t *atom)
 {
-   xvector_t *tmp = atom->data;
-   size_t len = XVECT_LENGTH (tmp);
+   void **tmp = atom->data;
+   size_t len = ll_length (tmp);
 
    for (size_t i=0; i<len; i++) {
-      atom_t *a = XVECT_INDEX (tmp, i);
+      atom_t *a = ll_index (tmp, i);
       atom_del (a);
    }
-   xvector_free (tmp);
+   ll_del (tmp);
 }
 
 static void a_del_nonlist (atom_t *atom)
@@ -113,11 +113,11 @@ static void print_depth (size_t depth, FILE *outf)
 
 static void a_pr_list (atom_t *atom, size_t depth, FILE *outf)
 {
-   xvector_t *children = atom->data;
-   size_t nchildren = XVECT_LENGTH (children);
+   void **children = atom->data;
+   size_t nchildren = ll_length (children);
 
    for (size_t i=0; i<nchildren; i++) {
-      atom_t *child = XVECT_INDEX (children, i);
+      atom_t *child = ll_index (children, i);
       atom_print (child, depth + 1, outf);
    }
 }
@@ -149,20 +149,20 @@ static void a_pr_float (atom_t *atom, size_t depth, FILE *outf)
 static atom_t *a_dup_list (atom_t *dst, const atom_t *src)
 {
    bool error = true;
-   xvector_t *tmp = xvector_new ();
-   xvector_t *stmp = src->data;
+   void **tmp = ll_new ();
+   void **stmp = src->data;
 
-   size_t len = XVECT_LENGTH (stmp);
+   size_t len = ll_length (stmp);
 
    for (size_t i=0; i<len; i++) {
 
-      atom_t *ea = XVECT_INDEX (stmp, i);
+      atom_t *ea = ll_index (stmp, i);
 
       atom_t *na = atom_dup (ea);
       if (!na)
          goto errorexit;
 
-      if (!(xvector_ins_tail (tmp, na)))
+      if (!(ll_ins_tail (&tmp, na)))
          goto errorexit;
    }
 
@@ -172,8 +172,8 @@ static atom_t *a_dup_list (atom_t *dst, const atom_t *src)
 
 errorexit:
    if (error) {
-      xvector_iterate (tmp, (void (*) (void *))atom_del);
-      xvector_free (tmp);
+      ll_iterate (tmp, (void (*) (void *))atom_del);
+      ll_del (tmp);
    }
    return error ? NULL : dst;
 }
@@ -336,8 +336,8 @@ size_t atom_list_length (const atom_t *atom)
    if (atom->type!=atom_LIST)
       return 0;
 
-   xvector_t *tmp = atom->data;
-   return XVECT_LENGTH (tmp);
+   void **tmp = atom->data;
+   return ll_length (tmp);
 }
 
 const atom_t *atom_list_car (const atom_t *atom)
@@ -346,8 +346,8 @@ const atom_t *atom_list_car (const atom_t *atom)
    if (atom->type!=atom_LIST)
       return NULL;
 
-   xvector_t *tmp = atom->data;
-   return XVECT_INDEX (tmp, 0);
+   void **tmp = atom->data;
+   return ll_index (tmp, 0);
 }
 
 const atom_t *atom_list_cdr (const atom_t *atom)
@@ -355,7 +355,7 @@ const atom_t *atom_list_cdr (const atom_t *atom)
    if (atom->type!=atom_LIST)
       return NULL;
 
-   xvector_t *tmp = atom->data;
+   void **tmp = atom->data;
 #warning Note to change from xvector_t to native arrays
    return NULL;
 }

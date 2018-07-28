@@ -7,7 +7,7 @@
 #include "parser/atom.h"
 
 
-#include "xvector/xvector.h"
+#include "ll/ll.h"
 #include "xstring/xstring.h"
 #include "xerror/xerror.h"
 
@@ -79,7 +79,7 @@ static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
 
       }
 
-      if (!(xvector_ins_tail (parent->data, na)))
+      if (!(ll_ins_tail (&parent->data, na)))
          goto errorexit;
 
    }
