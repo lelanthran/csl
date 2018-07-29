@@ -83,6 +83,18 @@ static const atom_t *rt_find_symbol (rt_t *rt, atom_t *name)
    return NULL;
 }
 
+static struct g_native_funcs_t {
+   const char *name;
+   rt_builtins_fptr_t *fptr;
+} g_native_funcs[] = {
+   {  "list",        builtins_LIST        },
+   {  "nappend",     builtins_NAPPEND     },
+   {  "+",           builtins_PLUS        },
+   {  "-",           builtins_MINUS       },
+   {  "/",           builtins_DIVIDE      },
+   {  "*",           builtins_MULTIPLY    },
+};
+
 rt_t *rt_new (void)
 {
    bool error = true;
@@ -95,9 +107,11 @@ rt_t *rt_new (void)
    ret->stack = atom_list_new ();
    ret->roots = atom_list_new ();
 
-   if (!rt_add_symbol (ret, atom_new (atom_STRING, "list"),
-                            rt_atom_native (builtins_LIST)))
-      goto errorexit;
+   for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
+      if (!rt_add_symbol (ret, atom_new (atom_STRING, g_native_funcs[i].name),
+                               rt_atom_native (g_native_funcs[i].fptr)))
+         goto errorexit;
+   }
 
    if (!rt_add_symbol (ret, atom_new (atom_STRING, "+"),
                             rt_atom_native (builtins_PLUS)))
