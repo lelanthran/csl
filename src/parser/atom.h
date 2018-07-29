@@ -42,6 +42,7 @@ extern "C" {
    atom_t *atom_new (enum atom_type_t type, const char *string);
    atom_t *atom_dup (const atom_t *atom);
    void atom_print (atom_t *atom, size_t depth, FILE *outf);
+   int atom_cmp (const atom_t *lhs, const atom_t *rhs);
 
    atom_t *atom_list_new (void);
    size_t atom_list_length (const atom_t *atom);

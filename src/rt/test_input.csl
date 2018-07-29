@@ -11,9 +11,9 @@
    (* 2 2 2)
    (/ 25 5.5)
 
-(define 'var1 "one")
+   (define 'var1 "fifty")
 
-var1
+   (* var1 5)
 
 (list 1 2 3 4)
 

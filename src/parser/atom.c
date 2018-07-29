@@ -15,6 +15,7 @@ typedef atom_t *(atom_newfunc_t) (atom_t *dst, const char *);
 typedef void (atom_delfunc_t) (atom_t *);
 typedef void (atom_prnfunc_t) (atom_t *, size_t, FILE *);
 typedef atom_t *(atom_dupfunc_t) (atom_t *dst, const atom_t *);
+typedef int (atom_cmpfunc_t) (const atom_t *lhs, const atom_t *rhs);
 
 static atom_t *a_new_list (atom_t *dst, const char *str)
 {
@@ -242,6 +243,59 @@ static atom_t *a_dup_fptr (atom_t *dst, const atom_t *src)
    return dst;
 }
 
+static int a_cmp_list (const atom_t *lhs, const atom_t *rhs)
+{
+   size_t lhs_len = atom_list_length (lhs),
+          rhs_len = atom_list_length (rhs);
+
+   for (size_t i=0; i<lhs_len && i<rhs_len; i++) {
+      const atom_t *lhs_child = atom_list_index (lhs, i),
+                   *rhs_child = atom_list_index (rhs, i);
+
+      int tmp = atom_cmp (lhs_child, rhs_child);
+      if (tmp) {
+         return tmp;
+      }
+   }
+
+   if (lhs_len < rhs_len)
+      return -1;
+
+   if (lhs_len > rhs_len)
+      return 1;
+
+   return 0;
+}
+
+static int a_cmp_string (const atom_t *lhs, const atom_t *rhs)
+{
+   const char *lhs_s = atom_to_string (lhs),
+              *rhs_s = atom_to_string (rhs);
+   return strcmp (lhs_s, rhs_s);
+}
+
+static int a_cmp_int (const atom_t *lhs, const atom_t *rhs)
+{
+   int64_t lhs_i = *(int64_t *)lhs->data,
+           rhs_i = *(int64_t *)rhs->data;
+
+   return lhs_i - rhs_i;
+}
+
+static int a_cmp_float (const atom_t *lhs, const atom_t *rhs)
+{
+   double lhs_f = *(double *)lhs->data,
+          rhs_f = *(double *)rhs->data;
+
+   return lhs_f - rhs_f;
+}
+
+static int a_cmp_fptr (const atom_t *lhs, const atom_t *rhs)
+{
+
+   return lhs->data - rhs->data;
+}
+
 typedef struct atom_dispatch_t atom_dispatch_t;
 struct atom_dispatch_t {
    enum atom_type_t  type;
@@ -249,20 +303,21 @@ struct atom_dispatch_t {
    atom_delfunc_t   *del_fptr;
    atom_prnfunc_t   *prn_fptr;
    atom_dupfunc_t   *dup_fptr;
+   atom_cmpfunc_t   *cmp_fptr;
 };
 
 static const atom_dispatch_t *atom_find_funcs (enum atom_type_t type)
 {
    static const atom_dispatch_t funcs[] = {
-{ atom_LIST,   a_new_list,   a_del_list,    a_pr_list  , a_dup_list   },
-{ atom_QUOTE,  a_new_string, a_del_nonlist, a_pr_quote, a_dup_string },
-{ atom_STRING, a_new_string, a_del_nonlist, a_pr_string, a_dup_string },
-{ atom_SYMBOL, a_new_string, a_del_nonlist, a_pr_symbol, a_dup_string },
-{ atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int    },
-{ atom_FLOAT,  a_new_float,  a_del_nonlist, a_pr_float,  a_dup_float  },
-{ atom_FFI,    a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr   },
-{ atom_NATIVE, a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr   },
-{ atom_UNKNOWN, NULL,        NULL,          NULL,        NULL         },
+{ atom_LIST,   a_new_list,   a_del_list,    a_pr_list,   a_dup_list,   a_cmp_list   },
+{ atom_QUOTE,  a_new_string, a_del_nonlist, a_pr_quote,  a_dup_string, a_cmp_string },
+{ atom_STRING, a_new_string, a_del_nonlist, a_pr_string, a_dup_string, a_cmp_string },
+{ atom_SYMBOL, a_new_string, a_del_nonlist, a_pr_symbol, a_dup_string, a_cmp_string },
+{ atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int,    a_cmp_int    },
+{ atom_FLOAT,  a_new_float,  a_del_nonlist, a_pr_float,  a_dup_float,  a_cmp_float  },
+{ atom_FFI,    a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr,   a_cmp_fptr   },
+{ atom_NATIVE, a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr,   a_cmp_fptr   },
+{ atom_UNKNOWN, NULL,        NULL,          NULL,        NULL,         NULL         },
    };
 
    for (size_t i=0; i<sizeof funcs/sizeof funcs[0]; i++) {
@@ -359,6 +414,23 @@ void atom_print (atom_t *atom, size_t depth, FILE *outf)
    if (funcs && funcs->prn_fptr) {
       funcs->prn_fptr (atom, depth, outf);
    }
+}
+
+int atom_cmp (const atom_t *lhs, const atom_t *rhs)
+{
+   const atom_dispatch_t *func_lhs = atom_find_funcs (lhs->type),
+                         *func_rhs = atom_find_funcs (rhs->type);
+
+   int ret = -1;
+
+   if (func_lhs != func_rhs)
+      return -1;
+
+   if (func_lhs->cmp_fptr) {
+      ret = func_lhs->cmp_fptr (lhs, rhs);
+   }
+
+   return ret;
 }
 
 atom_t *atom_list_new (void)
