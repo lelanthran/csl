@@ -58,7 +58,7 @@ atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
    return atom_dup (atom_list_index (entry, 1));
 }
 
-static atom_t *rt_funcall (atom_t *func, atom_t *argslist)
+static atom_t *rt_funcall (void **args, size_t nargs)
 {
 
 }
@@ -71,11 +71,8 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
    void **args = NULL;
    size_t nargs = 0;
 
-   if (!(func = rt_eval_symbol (rt, ll_index (atom->data, 0))))
-      goto errorexit;
-
    args = ll_new ();
-   nargs = ll_length (atom->data) - 1;
+   nargs = ll_length ((void **)atom->data);
 
    for (size_t i=0; i<nargs; i++) {
       atom_t *tmp = rt_eval (rt, ll_index (atom->data, i));
@@ -87,13 +84,19 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
          goto errorexit;
    }
 
-   if (func->type==atom_FFI) {
+   func = ll_index (args, 0);
+
+   if (func && func->type==atom_FFI) {
       // TODO: Implement FFI
-   } else {
-      ret = rt_funcall (func, args);
+   }
+   if (func && func->type==atom_NATIVE) {
+      ret = rt_funcall (args, nargs);
    }
 
 errorexit:
+   ll_iterate (args, (void (*) (void *))atom_del);
+   ll_del (args);
+
    return ret;
 }
 
@@ -104,6 +107,7 @@ atom_t *rt_eval (rt_t *rt, atom_t *atom)
    const atom_t *tmp = NULL;
 
    switch (atom->type) {
+      case atom_NATIVE:
       case atom_FFI:
       case atom_STRING:
       case atom_INT:

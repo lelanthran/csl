@@ -12,6 +12,7 @@ enum atom_type_t {
    atom_SYMBOL,
    atom_INT,
    atom_FLOAT,
+   atom_NATIVE,
    atom_FFI,
    atom_ENDL
 };

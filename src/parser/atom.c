@@ -89,6 +89,11 @@ errorexit:
    return ret;
 }
 
+static atom_t *a_new_fptr (atom_t *dst, const char *str)
+{
+   return (sscanf (str, "%p", &dst->data)==1) ? dst : NULL;
+}
+
 
 static void a_del_list (atom_t *atom)
 {
@@ -146,6 +151,12 @@ static void a_pr_float (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, " ->flt[%f]\n", *(double *)atom->data);
+}
+
+static void a_pr_fptr (atom_t *atom, size_t depth, FILE *outf)
+{
+   print_depth (depth, outf);
+   fprintf (outf, " ->ptr[%p]\n", atom->data);
 }
 
 static atom_t *a_dup_list (atom_t *dst, const atom_t *src)
@@ -218,6 +229,13 @@ static atom_t *a_dup_float (atom_t *dst, const atom_t *src)
    return dst;
 }
 
+static atom_t *a_dup_fptr (atom_t *dst, const atom_t *src)
+{
+   dst->data = src->data;
+
+   return dst;
+}
+
 typedef struct atom_dispatch_t atom_dispatch_t;
 struct atom_dispatch_t {
    enum atom_type_t  type;
@@ -235,6 +253,8 @@ static const atom_dispatch_t *atom_find_funcs (enum atom_type_t type)
 { atom_SYMBOL, a_new_string, a_del_nonlist, a_pr_symbol, a_dup_string },
 { atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int    },
 { atom_FLOAT,  a_new_float,  a_del_nonlist, a_pr_float,  a_dup_float  },
+{ atom_FFI,    a_new_fptr,   a_del_nonlist, a_pr_fptr,   a_dup_fptr   },
+{ atom_NATIVE, a_new_fptr,   a_del_nonlist, a_pr_fptr,   a_dup_fptr   },
    };
 
    for (size_t i=0; i<sizeof funcs/sizeof funcs[0]; i++) {

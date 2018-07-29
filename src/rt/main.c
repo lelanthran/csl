@@ -45,12 +45,14 @@ int main (void)
       XERROR ("Failed to execute expression\n");
       goto errorexit;
    }
+   parser_print (result, 0, stdout);
 
    ret = EXIT_SUCCESS;
 
 errorexit:
 
    parser_del (parser);
+   atom_del (result);
    rt_del (rt);
 
    for (size_t i=0; tokens && tokens[i]; i++) {
