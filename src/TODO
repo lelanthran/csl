@@ -2,7 +2,12 @@
 1. Parser is ignoring the final token in a file. This is an error in the
    reader.
 
-2. rt_new() currently loads each builtin individually. Must change to
-   load everything in a loop (store the string/function pairs in an
-   array).
+-- 2. rt_new() currently loads each builtin individually. Must change to
+-- load everything in a loop (store the string/function pairs in an
+-- array).
+
+3. Must perform replacement in rt_add_symbol.
+
+4. (Linked to #3) provide an undefine that removes entries from the symbol
+   table.
 
