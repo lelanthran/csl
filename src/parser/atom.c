@@ -129,6 +129,12 @@ static void a_pr_list (atom_t *atom, size_t depth, FILE *outf)
    }
 }
 
+static void a_pr_quote (atom_t *atom, size_t depth, FILE *outf)
+{
+   print_depth (depth, outf);
+   fprintf (outf, " ->quot[%s]\n", (char *)atom->data);
+}
+
 static void a_pr_string (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
@@ -249,6 +255,7 @@ static const atom_dispatch_t *atom_find_funcs (enum atom_type_t type)
 {
    static const atom_dispatch_t funcs[] = {
 { atom_LIST,   a_new_list,   a_del_list,    a_pr_list  , a_dup_list   },
+{ atom_QUOTE,  a_new_string, a_del_nonlist, a_pr_quote, a_dup_string },
 { atom_STRING, a_new_string, a_del_nonlist, a_pr_string, a_dup_string },
 { atom_SYMBOL, a_new_string, a_del_nonlist, a_pr_symbol, a_dup_string },
 { atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int    },

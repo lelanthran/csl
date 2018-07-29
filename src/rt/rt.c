@@ -10,6 +10,8 @@
 
 #include "xerror/xerror.h"
 
+#define FLAG_QUOTE         (1 << 0)
+
 static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
 {
    atom_t *ret = atom_new (atom_UNKNOWN, NULL);
@@ -153,11 +155,25 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
    nargs = ll_length ((void **)atom->data);
 
    for (size_t i=0; i<nargs; i++) {
-      atom_t *tmp = rt_eval (rt, ll_index (atom->data, i));
+
+      atom_t *tmp = ll_index (atom->data, i);
+      if (rt->flags & FLAG_QUOTE) {
+         tmp = atom_dup (tmp);
+      } else {
+         tmp = rt_eval (rt, tmp);
+      }
+      rt->flags &= ~FLAG_QUOTE;
+
       if (!tmp) {
          XERROR ("Fatal error during evaluation\n");
          goto errorexit;
       }
+      if (tmp->type==atom_QUOTE) {
+         atom_del (tmp);
+         rt->flags |= FLAG_QUOTE;
+         continue;
+      }
+
       if (!ll_ins_tail (&args, tmp))
          goto errorexit;
    }
@@ -195,6 +211,7 @@ atom_t *rt_eval (rt_t *rt, atom_t *atom)
       case atom_FFI:
       case atom_STRING:
       case atom_INT:
+      case atom_QUOTE:
       case atom_FLOAT:     tmp = atom_dup (atom);                       break;
 
       case atom_SYMBOL:    tmp = atom_dup (rt_eval_symbol (rt, atom));  break;

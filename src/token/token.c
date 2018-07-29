@@ -30,6 +30,7 @@ static enum token_type_t guess_type (const char *str)
       return token_UNKNOWN;
 
    if (str[0] == '(')         return token_STARTL;
+   if (str[0] == '\'')        return token_QUOTE;
    if (str[0] == ')')         return token_ENDL;
    if (str[0] == '"')         return token_STRING;
    if (is_operator (str[0]))  return token_OPERATOR;

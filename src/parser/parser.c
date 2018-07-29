@@ -53,6 +53,7 @@ static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
          case token_FLOAT:    type = atom_FLOAT;   break;
          case token_SYMBOL:   type = atom_SYMBOL;  break;
          case token_OPERATOR: type = atom_SYMBOL;  break;
+         case token_QUOTE:    type = atom_QUOTE;   break;
          case token_STRING:   type = atom_STRING;  break;
 
          case token_STARTL:   type = atom_LIST;    break;

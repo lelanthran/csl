@@ -9,6 +9,8 @@ struct rt_t {
    atom_t *symbols;
    atom_t *stack;
    atom_t *roots;
+
+   bool flags; // Reserved for internal use
 };
 
 #ifdef __cplusplus

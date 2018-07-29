@@ -2,7 +2,7 @@
    (list "next" 4 5.5)
    "more items"
    (list 'another
-      (list "nested list" with)
+      (list "nested list" 'with)
    666))
 
 
