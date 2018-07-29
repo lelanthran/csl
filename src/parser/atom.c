@@ -316,12 +316,13 @@ atom_t *atom_dup (const atom_t *atom)
 {
    bool error = true;
    atom_t *ret = NULL;
+
+   if (!atom)
+      return NULL;
+
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
 
    if (!funcs)
-      return NULL;
-
-   if (!atom)
       return NULL;
 
    if (!(ret = calloc (1, sizeof *ret)))

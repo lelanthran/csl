@@ -1,8 +1,8 @@
 (list "two three"
    (list "next" 4 5.5)
    "more items"
-   (list "another"
-      (list "nested list" "with")
+   (list 'another
+      (list "nested list" with)
    666))
 
 
