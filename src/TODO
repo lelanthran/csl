@@ -1,0 +1,8 @@
+
+1. Parser is ignoring the final token in a file. This is an error in the
+   reader.
+
+2. rt_new() currently loads each builtin individually. Must change to
+   load everything in a loop (store the string/function pairs in an
+   array).
+
