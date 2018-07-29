@@ -99,6 +99,10 @@ rt_t *rt_new (void)
                             rt_atom_native (builtins_LIST)))
       goto errorexit;
 
+   if (!rt_add_symbol (ret, atom_new (atom_STRING, "+"),
+                            rt_atom_native (builtins_PLUS)))
+      goto errorexit;
+
    error = false;
 
 errorexit:

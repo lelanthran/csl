@@ -47,6 +47,9 @@ extern "C" {
    size_t atom_list_length (const atom_t *atom);
    const atom_t *atom_list_index (const atom_t *atom, size_t index);
 
+   atom_t *atom_string_new (const char *s);
+   atom_t *atom_int_new (int64_t i);
+   atom_t *atom_float_new (double d);
 
    const char *atom_to_string (const atom_t *atom);
 

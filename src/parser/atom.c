@@ -384,6 +384,28 @@ const atom_t *atom_list_index (const atom_t *atom, size_t index)
    return ll_index (atom->data, index);
 }
 
+atom_t *atom_string_new (const char *s)
+{
+   return atom_new (atom_STRING, s);
+}
+
+atom_t *atom_int_new (int64_t i)
+{
+   char tmps[18];
+
+   sprintf (tmps, "%" PRIi64, i);
+   return atom_new (atom_INT, tmps);
+}
+
+atom_t *atom_float_new (double d)
+{
+   char tmps[18];
+
+   sprintf (tmps, "%5.5lf", d);
+   return atom_new (atom_FLOAT, tmps);
+}
+
+
 const char *atom_to_string (const atom_t *atom)
 {
    if (atom->type==atom_LIST) {
