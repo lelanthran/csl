@@ -45,6 +45,7 @@ int main (void)
       XERROR ("Failed to execute expression\n");
       goto errorexit;
    }
+   printf ("RESULT:\n");
    parser_print (result, 0, stdout);
 
    ret = EXIT_SUCCESS;

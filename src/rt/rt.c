@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "rt/rt.h"
 #include "rt/builtins.h"
@@ -29,7 +30,7 @@ static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
       name, value, NULL,
    };
 
-   ret = builtins_LIST (tmp);
+   ret = builtins_LIST (tmp, 2);
    if (!ret) {
       goto errorexit;
    }
@@ -38,7 +39,7 @@ static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
    tmp[1] = ret;
 
    // TODO: Remove existing entry first
-   if (!(builtins_NAPPEND (tmp)))
+   if (!(builtins_NAPPEND (tmp, 2)))
       goto errorexit;
 
    error = false;
@@ -58,6 +59,28 @@ errorexit:
    return ret;
 }
 
+static const atom_t *rt_find_symbol (rt_t *rt, atom_t *name)
+{
+   const char *strname = NULL;
+   size_t len = atom_list_length (rt->symbols);
+
+   if (!name)
+      return NULL;
+
+   strname = atom_to_string (name);
+
+   for (size_t i=0; i<len; i++) {
+      const atom_t *nvpair = atom_list_index (rt->symbols, i);
+      const char *n = atom_to_string (atom_list_index (nvpair, 0));
+      if (strcmp (n, strname)==0) {
+         // atom_del (name);
+         return nvpair;
+      }
+   }
+
+   return NULL;
+}
+
 rt_t *rt_new (void)
 {
    bool error = true;
@@ -70,7 +93,7 @@ rt_t *rt_new (void)
    ret->stack = atom_list_new ();
    ret->roots = atom_list_new ();
 
-   if (!rt_add_symbol (ret, atom_new (atom_STRING, "LIST"),
+   if (!rt_add_symbol (ret, atom_new (atom_STRING, "list"),
                             rt_atom_native (builtins_LIST)))
       goto errorexit;
 
@@ -98,26 +121,24 @@ void rt_del (rt_t *rt)
    free (rt);
 }
 
-atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
+const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
 {
-   size_t len = atom_list_length (rt->symbols);
    const atom_t *entry = NULL;
 
-   for (size_t i=0; i<len; i++) {
-      if ((entry = atom_list_index (atom, 0)))
-         break;
-   }
+   entry = rt_find_symbol (rt, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
       return NULL;
    }
 
-   return atom_dup (atom_list_index (entry, 1));
+   return atom_list_index (entry, 1);
 }
 
-static atom_t *rt_funcall (void **args, size_t nargs)
+static atom_t *rt_funcall_native (atom_t **args, size_t nargs)
 {
+   rt_builtins_fptr_t *fptr = args[0]->data;
 
+   return fptr (&args[1], nargs);
 }
 
 static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
@@ -147,7 +168,14 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
       // TODO: Implement FFI
    }
    if (func && func->type==atom_NATIVE) {
-      ret = rt_funcall (args, nargs);
+      ret = rt_funcall_native ((atom_t **)args, nargs);
+   }
+
+   if (!ret) {
+      ret = atom_list_new ();
+      for (size_t i=0; i<nargs; i++) {
+         ll_ins_tail ((void **)&ret->data, atom_dup (ll_index (args, i)));
+      }
    }
 
 errorexit:
@@ -160,22 +188,21 @@ errorexit:
 atom_t *rt_eval (rt_t *rt, atom_t *atom)
 {
    bool error = true;
-   atom_t *ret = NULL;
-   const atom_t *tmp = NULL;
+   atom_t *tmp = NULL;
 
    switch (atom->type) {
       case atom_NATIVE:
       case atom_FFI:
       case atom_STRING:
       case atom_INT:
-      case atom_FLOAT:     tmp = atom;                      break;
+      case atom_FLOAT:     tmp = atom_dup (atom);                       break;
 
-      case atom_SYMBOL:    tmp = rt_eval_symbol (rt, atom); break;
+      case atom_SYMBOL:    tmp = atom_dup (rt_eval_symbol (rt, atom));  break;
 
-      case atom_LIST:      tmp = rt_list_eval (rt, atom);   break;
+      case atom_LIST:      tmp = rt_list_eval (rt, atom);               break;
 
       case atom_ENDL:
-      case atom_UNKNOWN:   tmp = NULL;                      break;
+      case atom_UNKNOWN:   tmp = NULL;                                  break;
    }
 
    if (!tmp) {
@@ -183,20 +210,16 @@ atom_t *rt_eval (rt_t *rt, atom_t *atom)
       goto errorexit;
    }
 
-   if (!(ret = atom_dup (tmp)))
-      goto errorexit;
-
    error = false;
 
 errorexit:
 
    if (error) {
-      atom_del (ret);
-      ret = NULL;
+      atom_del (tmp);
+      tmp = NULL;
    }
 
-
-   return ret;
+   return tmp;
 }
 
 
