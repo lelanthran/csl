@@ -24,7 +24,7 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
    return ret;
 }
 
-static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
+atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -32,31 +32,32 @@ static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
       name, value, NULL,
    };
 
-   ret = builtins_LIST (rt, tmp, 2);
-   if (!ret) {
+   atom_t *tlist = builtins_LIST (rt, tmp, 2);
+   if (!tlist) {
       goto errorexit;
    }
 
    tmp[0] = rt->symbols;
-   tmp[1] = ret;
+   tmp[1] = tlist;
 
    // TODO: Remove existing entry first
-   if (!(builtins_NAPPEND (rt, tmp, 2)))
+   if ((ret = builtins_NAPPEND (rt, tmp, 2))==NULL)
       goto errorexit;
 
    error = false;
 
 errorexit:
 
-   atom_del (ret);
-   atom_del (name);
-   atom_del (value);
-
    if (error) {
       ret = NULL;
    } else {
-      ret = rt->symbols;
+      ret = tlist;
    }
+
+   // atom_del (ret);
+   //atom_del (tlist);
+   atom_del (name);
+   atom_del (value);
 
    return ret;
 }
@@ -89,6 +90,7 @@ static struct g_native_funcs_t {
 } g_native_funcs[] = {
    {  "list",        builtins_LIST        },
    {  "nappend",     builtins_NAPPEND     },
+   {  "define",      builtins_DEFINE      },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
@@ -109,9 +111,13 @@ rt_t *rt_new (void)
    ret->roots = atom_list_new ();
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
-      if (!rt_add_symbol (ret, atom_new (atom_STRING, g_native_funcs[i].name),
-                               rt_atom_native (g_native_funcs[i].fptr)))
+      atom_t *tmp =
+         rt_add_symbol (ret,
+                        atom_new (atom_STRING, g_native_funcs[i].name),
+                        rt_atom_native (g_native_funcs[i].fptr));
+      if (!tmp)
          goto errorexit;
+      atom_del (tmp);
    }
 
    error = false;
@@ -167,9 +173,9 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
    size_t nargs = 0;
 
    args = ll_new ();
-   nargs = ll_length ((void **)atom->data);
+   size_t llen = ll_length ((void **)atom->data);
 
-   for (size_t i=0; i<nargs; i++) {
+   for (size_t i=0; i<llen; i++) {
 
       atom_t *tmp = ll_index (atom->data, i);
       if (rt->flags & FLAG_QUOTE) {
@@ -191,6 +197,8 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
 
       if (!ll_ins_tail (&args, tmp))
          goto errorexit;
+
+      nargs++;
    }
 
    func = ll_index (args, 0);
@@ -199,12 +207,12 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
       // TODO: Implement FFI
    }
    if (func && func->type==atom_NATIVE) {
-      ret = rt_funcall_native (rt, (atom_t **)args, nargs);
+      ret = rt_funcall_native (rt, (atom_t **)args, --nargs);
    }
 
    if (!ret) {
       ret = atom_list_new ();
-      for (size_t i=0; i<nargs; i++) {
+      for (size_t i=0; i<llen; i++) {
          ll_ins_tail ((void ***)&ret->data, atom_dup (ll_index (args, i)));
       }
    }
