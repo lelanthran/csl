@@ -2,9 +2,61 @@
 #include <stdbool.h>
 
 #include "rt/rt.h"
+#include "rt/builtins.h"
+
 #include "ll/ll.h"
 
+
 #include "xerror/xerror.h"
+
+static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
+{
+   atom_t *ret = atom_new (atom_UNKNOWN, NULL);
+   if (!ret)
+      return NULL;
+
+   ret->data = fptr;
+   ret->type = atom_NATIVE;
+
+   return ret;
+}
+
+static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
+{
+   bool error = true;
+   atom_t *ret = NULL;
+   atom_t *tmp[] = {
+      name, value, NULL,
+   };
+
+   ret = builtins_LIST (tmp);
+   if (!ret) {
+      goto errorexit;
+   }
+
+   tmp[0] = rt->symbols;
+   tmp[1] = ret;
+
+   // TODO: Remove existing entry first
+   if (!(builtins_NAPPEND (tmp)))
+      goto errorexit;
+
+   error = false;
+
+errorexit:
+
+   atom_del (ret);
+   atom_del (name);
+   atom_del (value);
+
+   if (error) {
+      ret = NULL;
+   } else {
+      ret = rt->symbols;
+   }
+
+   return ret;
+}
 
 rt_t *rt_new (void)
 {
@@ -17,6 +69,11 @@ rt_t *rt_new (void)
    ret->symbols = atom_list_new ();
    ret->stack = atom_list_new ();
    ret->roots = atom_list_new ();
+
+   if (!rt_add_symbol (ret, atom_new (atom_STRING, "LIST"),
+                            rt_atom_native (builtins_LIST)))
+      goto errorexit;
+
    error = false;
 
 errorexit:

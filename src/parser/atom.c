@@ -253,8 +253,9 @@ static const atom_dispatch_t *atom_find_funcs (enum atom_type_t type)
 { atom_SYMBOL, a_new_string, a_del_nonlist, a_pr_symbol, a_dup_string },
 { atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int    },
 { atom_FLOAT,  a_new_float,  a_del_nonlist, a_pr_float,  a_dup_float  },
-{ atom_FFI,    a_new_fptr,   a_del_nonlist, a_pr_fptr,   a_dup_fptr   },
-{ atom_NATIVE, a_new_fptr,   a_del_nonlist, a_pr_fptr,   a_dup_fptr   },
+{ atom_FFI,    a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr   },
+{ atom_NATIVE, a_new_fptr,   NULL,          a_pr_fptr,   a_dup_fptr   },
+{ atom_UNKNOWN, NULL,        NULL,          NULL,        NULL         },
    };
 
    for (size_t i=0; i<sizeof funcs/sizeof funcs[0]; i++) {
@@ -276,7 +277,7 @@ void atom_del (atom_t *atom)
    }
 
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
-   if (funcs) {
+   if (funcs && funcs->del_fptr) {
       funcs->del_fptr (atom);
    }
 
@@ -292,11 +293,10 @@ atom_t *atom_new (enum atom_type_t type, const char *string)
    if (!(ret = calloc (1, sizeof *ret)))
       goto errorexit;
 
-   if (!funcs)
-      goto errorexit;
-
-   if (!(funcs->new_fptr (ret, string)))
-      goto errorexit;
+   if (funcs && funcs->new_fptr) {
+      if (!(funcs->new_fptr (ret, string)))
+         goto errorexit;
+   }
 
    ret->type = type;
 
@@ -327,7 +327,7 @@ atom_t *atom_dup (const atom_t *atom)
    if (!(ret = calloc (1, sizeof *ret)))
       goto errorexit;
 
-   if (!(funcs->dup_fptr (ret, atom)))
+   if (funcs->dup_fptr && !(funcs->dup_fptr (ret, atom)))
       goto errorexit;
 
    ret->type = atom->type;
@@ -348,7 +348,7 @@ void atom_print (atom_t *atom, size_t depth, FILE *outf)
 {
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
 
-   if (funcs) {
+   if (funcs && funcs->prn_fptr) {
       funcs->prn_fptr (atom, depth, outf);
    }
 }
