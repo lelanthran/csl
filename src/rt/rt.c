@@ -32,7 +32,7 @@ static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
       name, value, NULL,
    };
 
-   ret = builtins_LIST (tmp, 2);
+   ret = builtins_LIST (rt, tmp, 2);
    if (!ret) {
       goto errorexit;
    }
@@ -41,7 +41,7 @@ static atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
    tmp[1] = ret;
 
    // TODO: Remove existing entry first
-   if (!(builtins_NAPPEND (tmp, 2)))
+   if (!(builtins_NAPPEND (rt, tmp, 2)))
       goto errorexit;
 
    error = false;
@@ -89,6 +89,7 @@ static struct g_native_funcs_t {
 } g_native_funcs[] = {
    {  "list",        builtins_LIST        },
    {  "nappend",     builtins_NAPPEND     },
+
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
    {  "/",           builtins_DIVIDE      },
@@ -112,10 +113,6 @@ rt_t *rt_new (void)
                                rt_atom_native (g_native_funcs[i].fptr)))
          goto errorexit;
    }
-
-   if (!rt_add_symbol (ret, atom_new (atom_STRING, "+"),
-                            rt_atom_native (builtins_PLUS)))
-      goto errorexit;
 
    error = false;
 
@@ -154,11 +151,11 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
    return atom_list_index (entry, 1);
 }
 
-static atom_t *rt_funcall_native (atom_t **args, size_t nargs)
+static atom_t *rt_funcall_native (rt_t *rt, atom_t **args, size_t nargs)
 {
    rt_builtins_fptr_t *fptr = args[0]->data;
 
-   return fptr (&args[1], nargs);
+   return fptr (rt, &args[1], nargs);
 }
 
 static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
@@ -202,13 +199,13 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
       // TODO: Implement FFI
    }
    if (func && func->type==atom_NATIVE) {
-      ret = rt_funcall_native ((atom_t **)args, nargs);
+      ret = rt_funcall_native (rt, (atom_t **)args, nargs);
    }
 
    if (!ret) {
       ret = atom_list_new ();
       for (size_t i=0; i<nargs; i++) {
-         ll_ins_tail ((void **)&ret->data, atom_dup (ll_index (args, i)));
+         ll_ins_tail ((void ***)&ret->data, atom_dup (ll_index (args, i)));
       }
    }
 
