@@ -24,7 +24,7 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
    return ret;
 }
 
-atom_t *rt_symbol_add (rt_t *rt, atom_t *name, atom_t *value)
+atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -32,16 +32,16 @@ atom_t *rt_symbol_add (rt_t *rt, atom_t *name, atom_t *value)
       name, value, NULL,
    };
 
-   atom_t *tlist = builtins_LIST (rt, tmp, 2);
+   atom_t *tlist = builtins_LIST (NULL, tmp, 2);
    if (!tlist) {
       goto errorexit;
    }
 
-   tmp[0] = rt->symbols;
+   tmp[0] = symbols;
    tmp[1] = tlist;
 
    // TODO: Remove existing entry first
-   if ((ret = builtins_NAPPEND (rt, tmp, 2))==NULL)
+   if ((ret = builtins_NAPPEND (NULL, tmp, 2))==NULL)
       goto errorexit;
 
    error = false;
@@ -62,10 +62,10 @@ errorexit:
    return ret;
 }
 
-const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
+const atom_t *rt_symbol_find (atom_t *symbols, const atom_t *name)
 {
    const char *strname = NULL;
-   size_t len = atom_list_length (rt->symbols);
+   size_t len = atom_list_length (symbols);
 
    if (!name)
       return NULL;
@@ -73,7 +73,7 @@ const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
    strname = atom_to_string (name);
 
    for (size_t i=0; i<len; i++) {
-      const atom_t *nvpair = atom_list_index (rt->symbols, i);
+      const atom_t *nvpair = atom_list_index (symbols, i);
       const char *n = atom_to_string (atom_list_index (nvpair, 0));
       if (strcmp (n, strname)==0) {
          // atom_del (name);
@@ -84,10 +84,10 @@ const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
    return NULL;
 }
 
-atom_t *rt_symbol_remove (rt_t *rt, const atom_t *name)
+atom_t *rt_symbol_remove (atom_t *symbols, const atom_t *name)
 {
    const char *strname = NULL;
-   size_t len = atom_list_length (rt->symbols);
+   size_t len = atom_list_length (symbols);
 
    if (!name)
       return NULL;
@@ -95,10 +95,10 @@ atom_t *rt_symbol_remove (rt_t *rt, const atom_t *name)
    strname = atom_to_string (name);
 
    for (size_t i=0; i<len; i++) {
-      const atom_t *nvpair = atom_list_index (rt->symbols, i);
+      const atom_t *nvpair = atom_list_index (symbols, i);
       const char *n = atom_to_string (atom_list_index (nvpair, 0));
       if (strcmp (n, strname)==0) {
-         return atom_list_remove (rt->symbols, i);
+         return atom_list_remove (symbols, i);
       }
    }
 
@@ -134,7 +134,7 @@ rt_t *rt_new (void)
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
       atom_t *tmp =
-         rt_symbol_add (ret,
+         rt_symbol_add (ret->symbols,
                         atom_new (atom_SYMBOL, g_native_funcs[i].name),
                         rt_atom_native (g_native_funcs[i].fptr));
       if (!tmp)
@@ -170,7 +170,7 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
 {
    const atom_t *entry = NULL;
 
-   entry = rt_symbol_find (rt, atom);
+   entry = rt_symbol_find (rt->symbols, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
       return NULL;
