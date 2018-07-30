@@ -6,8 +6,13 @@
 -- load everything in a loop (store the string/function pairs in an
 -- array).
 
-3. Must perform replacement in rt_add_symbol.
+-- 3. Must perform replacement in rt_add_symbol.
 
-4. (Linked to #3) provide an undefine that removes entries from the symbol
-   table.
+-- 4. (Linked to #3) provide an undefine that removes entries from the symbol
+--    table.
 
+5. Add support for user-defined functions. This is harder than it looks;
+   will need to decide on scoping rules (prefer dynamic - it's easier to
+   implement) and ensure that every "list" node can also store a symbol
+   table. This means, of course, that the rt_symbol_* functions must
+   operate on a given symbol table, and not the global one.
