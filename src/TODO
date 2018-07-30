@@ -16,3 +16,7 @@
    implement) and ensure that every "list" node can also store a symbol
    table. This means, of course, that the rt_symbol_* functions must
    operate on a given symbol table, and not the global one.
+
+   (NOTE: Have to implement a stack, because adding symbol tables to
+   atom_LIST types result in each atom needing a pointer to its parent as
+   well. The stack can be almost fully implemented in rt_t data objects)
