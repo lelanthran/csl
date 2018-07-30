@@ -7,6 +7,7 @@
 
 enum atom_type_t {
    atom_UNKNOWN = 0,
+   atom_NIL,
    atom_LIST,
    atom_QUOTE,
    atom_STRING,
