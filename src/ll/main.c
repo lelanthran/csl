@@ -45,6 +45,10 @@ int main (void)
       printf ("Stored [%s]\n", tmp);
    }
 
+   char *tmp = ll_remove (&ll, 3);
+   free (tmp);
+
+   ll_iterate (ll, printstr);
    ll_iterate (ll, free);
    ll_del (ll);
    ll = ll_new ();

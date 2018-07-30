@@ -17,6 +17,7 @@ extern "C" {
    void *ll_ins_tail (void ***ll, void *el);
    void *ll_ins_head (void ***ll, void *el);
 
+   void *ll_remove (void ***ll, size_t index);
 
 #ifdef __cplusplus
 };

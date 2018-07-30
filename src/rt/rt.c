@@ -62,7 +62,7 @@ errorexit:
    return ret;
 }
 
-static const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
+const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
 {
    const char *strname = NULL;
    size_t len = atom_list_length (rt->symbols);
@@ -84,6 +84,27 @@ static const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
    return NULL;
 }
 
+atom_t *rt_symbol_remove (rt_t *rt, const atom_t *name)
+{
+   const char *strname = NULL;
+   size_t len = atom_list_length (rt->symbols);
+
+   if (!name)
+      return NULL;
+
+   strname = atom_to_string (name);
+
+   for (size_t i=0; i<len; i++) {
+      const atom_t *nvpair = atom_list_index (rt->symbols, i);
+      const char *n = atom_to_string (atom_list_index (nvpair, 0));
+      if (strcmp (n, strname)==0) {
+         return atom_list_remove (rt->symbols, i);
+      }
+   }
+
+   return NULL;
+}
+
 static struct g_native_funcs_t {
    const char *name;
    rt_builtins_fptr_t *fptr;
@@ -91,6 +112,7 @@ static struct g_native_funcs_t {
    {  "list",        builtins_LIST        },
    {  "nappend",     builtins_NAPPEND     },
    {  "define",      builtins_DEFINE      },
+   {  "undefine",    builtins_UNDEFINE    },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },

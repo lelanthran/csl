@@ -456,6 +456,14 @@ const atom_t *atom_list_index (const atom_t *atom, size_t index)
    return ll_index (atom->data, index);
 }
 
+atom_t *atom_list_remove (atom_t *atom, size_t index)
+{
+   if (atom->type!=atom_LIST)
+      return NULL;
+
+   return ll_remove (&atom->data, index);
+}
+
 atom_t *atom_string_new (const char *s)
 {
    return atom_new (atom_STRING, s);

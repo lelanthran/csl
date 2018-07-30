@@ -122,3 +122,19 @@ void *ll_ins_head (void ***ll, void *el)
    return (*ll)[nitems];
 }
 
+void *ll_remove (void ***ll, size_t index)
+{
+   if (!ll || !*ll)
+      return NULL;
+
+   size_t len = ll_length (*ll);
+   if (index > len)
+      return NULL;
+
+   void *ret = (*ll)[index];
+
+   memmove (&(*ll)[index], &(*ll)[index + 1],
+            (sizeof (void *)) * (len - index));
+
+   return ret;
+}
