@@ -24,7 +24,7 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
    return ret;
 }
 
-atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value)
+atom_t *rt_symbol_add (rt_t *rt, atom_t *name, atom_t *value)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -62,7 +62,7 @@ errorexit:
    return ret;
 }
 
-static const atom_t *rt_find_symbol (rt_t *rt, atom_t *name)
+static const atom_t *rt_symbol_find (rt_t *rt, const atom_t *name)
 {
    const char *strname = NULL;
    size_t len = atom_list_length (rt->symbols);
@@ -112,7 +112,7 @@ rt_t *rt_new (void)
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
       atom_t *tmp =
-         rt_add_symbol (ret,
+         rt_symbol_add (ret,
                         atom_new (atom_SYMBOL, g_native_funcs[i].name),
                         rt_atom_native (g_native_funcs[i].fptr));
       if (!tmp)
@@ -148,7 +148,7 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
 {
    const atom_t *entry = NULL;
 
-   entry = rt_find_symbol (rt, atom);
+   entry = rt_symbol_find (rt, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
       return NULL;
