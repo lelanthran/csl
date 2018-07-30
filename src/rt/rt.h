@@ -2,6 +2,8 @@
 #ifndef H_RT
 #define H_RT
 
+#include <stdio.h>
+
 #include "parser/atom.h"
 
 typedef struct rt_t rt_t;
@@ -23,6 +25,8 @@ extern "C" {
    atom_t *rt_add_symbol (rt_t *rt, atom_t *name, atom_t *value);
 
    atom_t *rt_eval (rt_t *rt, atom_t *atom);
+
+   void rt_print (rt_t *rt, FILE *outf);
 
 #ifdef __cplusplus
 };

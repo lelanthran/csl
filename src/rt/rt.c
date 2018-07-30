@@ -113,7 +113,7 @@ rt_t *rt_new (void)
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
       atom_t *tmp =
          rt_add_symbol (ret,
-                        atom_new (atom_STRING, g_native_funcs[i].name),
+                        atom_new (atom_SYMBOL, g_native_funcs[i].name),
                         rt_atom_native (g_native_funcs[i].fptr));
       if (!tmp)
          goto errorexit;
@@ -262,4 +262,17 @@ errorexit:
    return tmp;
 }
 
+void rt_print (rt_t *rt, FILE *outf)
+{
+   if (!outf)
+      outf = stdout;
+
+   if (!rt) {
+      fprintf (outf, "NULL Runtime Object\n");
+      return;
+   }
+
+   atom_print (rt->symbols, 0, outf);
+
+}
 

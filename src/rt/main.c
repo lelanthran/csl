@@ -48,6 +48,9 @@ int main (void)
    printf ("RESULT:\n");
    parser_print (result, 0, stdout);
 
+   printf ("RUNTIME:\n");
+   rt_print (rt, stdout);
+
    ret = EXIT_SUCCESS;
 
 errorexit:
