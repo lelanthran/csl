@@ -113,6 +113,7 @@ static struct g_native_funcs_t {
    {  "nappend",     builtins_NAPPEND     },
    {  "define",      builtins_DEFINE      },
    {  "undefine",    builtins_UNDEFINE    },
+   {  "eval",        builtins_EVAL        },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
