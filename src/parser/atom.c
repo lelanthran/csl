@@ -461,7 +461,23 @@ atom_t *atom_list_remove (atom_t *atom, size_t index)
    if (atom->type!=atom_LIST)
       return NULL;
 
-   return ll_remove (&atom->data, index);
+   return ll_remove ((void ***)&atom->data, index);
+}
+
+atom_t *atom_list_ins_tail (atom_t *atom, void *el)
+{
+   if (atom->type!=atom_LIST)
+      return NULL;
+
+   return ll_ins_tail ((void ***)&atom->data, el);
+}
+
+atom_t *atom_list_ins_head (atom_t *atom, void *el)
+{
+   if (atom->type!=atom_LIST)
+      return NULL;
+
+   return ll_ins_head ((void ***)&atom->data, el);
 }
 
 atom_t *atom_string_new (const char *s)

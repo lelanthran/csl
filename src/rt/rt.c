@@ -195,11 +195,11 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
    size_t nargs = 0;
 
    args = ll_new ();
-   size_t llen = ll_length ((void **)atom->data);
+   size_t llen = atom_list_length (atom);
 
    for (size_t i=0; i<llen; i++) {
 
-      atom_t *tmp = ll_index (atom->data, i);
+      atom_t *tmp = (atom_t *)atom_list_index (atom, i);
       if (rt->flags & FLAG_QUOTE) {
          tmp = atom_dup (tmp);
       } else {
@@ -235,7 +235,7 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
    if (!ret) {
       ret = atom_list_new ();
       for (size_t i=0; i<llen; i++) {
-         ll_ins_tail ((void ***)&ret->data, atom_dup (ll_index (args, i)));
+         atom_list_ins_tail (ret, atom_dup (ll_index (args, i)));
       }
    }
 
