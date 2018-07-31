@@ -144,12 +144,18 @@ atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
    nargs = nargs;
 
+   atom_t *symbols = sym ? atom_concatenate (sym, args[0], NULL)
+                         : atom_dup (args[0]);
+
    printf ("*****************************************************\n");
    atom_print (args[0], 5, stdout);
    atom_print (args[1], 5, stdout);
    printf ("*****************************************************\n");
 
-   return rt_eval (rt, args[0], args[1]);
+   atom_t *ret = rt_eval (rt, symbols, args[1]);
+
+   atom_del (symbols);
+   return ret;
 }
 
 static atom_t *builtins_operator (rt_t *rt, atom_t *sym,

@@ -410,6 +410,47 @@ errorexit:
    return ret;
 }
 
+atom_t *atom_concatenate (const atom_t *a, ...)
+{
+   bool error = true;
+   atom_t *ret = NULL;
+   va_list ap;
+
+
+   va_start (ap, a);
+
+   if (!(ret = atom_list_new ()))
+      goto errorexit;
+
+   atom_t *tmp = a;
+   while (a) {
+
+      size_t len = atom_list_length (a);
+
+      for (size_t i=0; i<len; i++) {
+         atom_t *tmp = atom_list_index (a, i);
+         if (!(atom_list_ins_tail (ret, tmp))) {
+            goto errorexit;
+         }
+      }
+
+      a = va_arg (ap, atom_t *);
+   }
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   va_end (ap);
+
+   return ret;
+}
+
 void atom_print (atom_t *atom, size_t depth, FILE *outf)
 {
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
