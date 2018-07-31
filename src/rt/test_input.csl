@@ -36,8 +36,12 @@
    '(eval (print "Function")
          '(* a b))))
 
+(print "Eval result ............" (eval myfunc))
 
-(eval myfunc)
+(define 'realfunc '((a b) (+ a b)))
+
+(funcall '(1 2) realfunc)
+
 
    (undefine '+)
 

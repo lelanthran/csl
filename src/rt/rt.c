@@ -118,6 +118,7 @@ static struct g_native_funcs_t {
    {  "print",       builtins_PRINT       },
    {  "concat",      builtins_CONCAT      },
    {  "let",         builtins_LET         },
+   {  "funcall",     builtins_FUNCALL     },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },

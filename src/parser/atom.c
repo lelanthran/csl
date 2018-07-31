@@ -422,19 +422,18 @@ atom_t *atom_concatenate (const atom_t *a, ...)
    if (!(ret = atom_list_new ()))
       goto errorexit;
 
-   atom_t *tmp = a;
    while (a) {
 
       size_t len = atom_list_length (a);
 
       for (size_t i=0; i<len; i++) {
-         atom_t *tmp = atom_list_index (a, i);
+         atom_t *tmp = (atom_t *)atom_list_index (a, i);
          if (!(atom_list_ins_tail (ret, tmp))) {
             goto errorexit;
          }
       }
 
-      a = va_arg (ap, atom_t *);
+      a = va_arg (ap, const atom_t *);
    }
 
    error = false;
@@ -447,6 +446,63 @@ errorexit:
    }
 
    va_end (ap);
+
+   return ret;
+}
+
+atom_t *atom_list_new (void)
+{
+   return atom_new (atom_LIST, NULL);
+}
+
+atom_t *atom_list_pair (atom_t *lnames, atom_t*lvalues)
+{
+   bool error = true;
+   atom_t *ret = atom_list_new ();
+
+   if (!ret || !lnames || !lvalues) {
+      fprintf (stderr, "NULL values found\n");
+      goto errorexit;
+   }
+
+   size_t nlen = atom_list_length (lnames),
+          vlen = atom_list_length (lvalues);
+
+   if (nlen != vlen) {
+      fprintf (stderr, "Lists unequal length [%zu : %zu]\n",
+                        nlen, vlen);
+      goto errorexit;
+   }
+
+   for (size_t i=0; i<nlen; i++) {
+
+      atom_t *pair = atom_list_new ();
+
+      const atom_t *name = atom_list_index (lnames, i),
+                   *value = atom_list_index (lvalues, i);
+
+      if (!pair) {
+         fprintf (stderr, "Cannot create new list\n");
+         goto errorexit;
+      }
+
+      if ((!atom_list_ins_tail (pair, atom_dup (name))) ||
+          (!atom_list_ins_tail (pair, atom_dup (value)))) {
+         atom_del (pair);
+         goto errorexit;
+      }
+
+      if (!atom_list_ins_tail (ret, pair))
+         goto errorexit;
+   }
+
+   error = false;
+
+errorexit:
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
 
    return ret;
 }
@@ -475,11 +531,6 @@ int atom_cmp (const atom_t *lhs, const atom_t *rhs)
    }
 
    return ret;
-}
-
-atom_t *atom_list_new (void)
-{
-   return atom_new (atom_LIST, NULL);
 }
 
 size_t atom_list_length (const atom_t *atom)

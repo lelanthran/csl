@@ -147,15 +147,66 @@ atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    atom_t *symbols = sym ? atom_concatenate (sym, args[0], NULL)
                          : atom_dup (args[0]);
 
-   printf ("*****************************************************\n");
-   atom_print (args[0], 5, stdout);
-   atom_print (args[1], 5, stdout);
-   printf ("*****************************************************\n");
-
    atom_t *ret = rt_eval (rt, symbols, args[1]);
 
    atom_del (symbols);
+
    return ret;
+}
+
+atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   bool error = true;
+
+   atom_t *tmpsym = NULL,
+          *allsyms = NULL,
+          *ret = NULL;
+
+   if (nargs!=2) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too many arguments for FUNCALL (found %zu). Possible "
+                       "unterminated list.\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
+      return NULL;
+   }
+
+   printf ("*****************************************************\n");
+   atom_print (args[0], 5, stdout);
+   printf ("*****************************************************\n");
+   atom_print (args[1], 5, stdout);
+   printf ("*****************************************************\n");
+
+   const atom_t *fargs = args[0],
+                *fparam = atom_list_index (args[1], 0),
+                *body = atom_list_index (args[1], 1);
+
+   if (!(tmpsym = atom_list_pair (fparam, fargs))) {
+      fprintf (stderr, "Unable to construct parameters\n");
+      goto errorexit;
+   }
+
+   if (!(allsyms = atom_concatenate (tmpsym, sym, NULL))) {
+      fprintf (stderr, "Unable to concatenate parameters\n");
+      goto errorexit;
+   }
+
+   ret = rt_eval (rt, allsyms, body);
+
+   printf ("*****************************************************\n");
+   atom_print (ret, 5, stdout);
+   printf ("*****************************************************\n");
+
+   error = false;
+
+errorexit:
+
+   atom_del (tmpsym);
+   atom_del (allsyms);
+
+   return NULL;
 }
 
 static atom_t *builtins_operator (rt_t *rt, atom_t *sym,
