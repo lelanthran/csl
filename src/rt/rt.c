@@ -115,6 +115,7 @@ static struct g_native_funcs_t {
    {  "undefine",    builtins_UNDEFINE    },
    {  "eval",        builtins_EVAL        },
    {  "print",       builtins_PRINT       },
+   {  "concat",      builtins_CONCAT      },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
