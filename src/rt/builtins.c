@@ -5,13 +5,14 @@
 #include "ll/ll.h"
 
 
-atom_t *builtins_LIST (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_LIST (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
    bool error = true;
    atom_t *ret = NULL;
 
    nargs = nargs;
    rt = rt;
+   sym = sym;
 
    if (!(ret = atom_list_new ()))
       goto errorexit;
@@ -32,12 +33,13 @@ errorexit:
    return ret;
 }
 
-atom_t *builtins_NAPPEND (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_NAPPEND (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
    bool error = true;
 
    nargs = nargs;
    rt = rt;
+   sym = sym;
 
    if (args[0]->type!=atom_LIST)
       return NULL;
@@ -54,16 +56,26 @@ errorexit:
    return error ? NULL : args[0];
 }
 
-atom_t *builtins_DEFINE (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_DEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   if (nargs != 2)
+   sym = sym;
+   if (nargs != 2) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too many arguments for DEFINE (found %zu). Possible "
+                       "unterminated list.\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
       return NULL;
+   }
 
    return rt_symbol_add (rt->symbols, atom_dup (args[0]), atom_dup (args[1]));
 }
 
-atom_t *builtins_UNDEFINE (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_UNDEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
+   sym = sym;
    atom_t *ret = NULL;
    for (size_t i=0; i<nargs; i++) {
       atom_del (ret);
@@ -73,20 +85,26 @@ atom_t *builtins_UNDEFINE (rt_t *rt, atom_t **args, size_t nargs)
    return ret;
 }
 
-atom_t *builtins_EVAL (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_EVAL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
+   nargs = nargs;
+
    atom_t *ret = NULL;
 
    for (size_t i=0; args[i]; i++) {
       atom_del (ret);
-      ret = rt_eval (rt, args[i]);
+      ret = rt_eval (rt, sym, args[i]);
    }
 
    return ret;
 }
 
-atom_t *builtins_PRINT (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_PRINT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
+   nargs = nargs;
+   rt = rt;
+   sym = sym;
+
    for (size_t i=0; args[i]; i++) {
       atom_print (args[i], 0, stdout);
    }
@@ -94,8 +112,12 @@ atom_t *builtins_PRINT (rt_t *rt, atom_t **args, size_t nargs)
    return atom_new (atom_NIL, NULL);
 }
 
-atom_t *builtins_CONCAT (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_CONCAT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
+   nargs = nargs;
+   rt = rt;
+   sym = sym;
+
    bool error = true;
    atom_t *ret = atom_list_new ();
 
@@ -118,7 +140,20 @@ errorexit:
    return ret;
 }
 
-static atom_t *builtins_operator (rt_t *rt, atom_t **args, size_t nargs,
+atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   nargs = nargs;
+
+   printf ("*****************************************************\n");
+   atom_print (args[0], 5, stdout);
+   atom_print (args[1], 5, stdout);
+   printf ("*****************************************************\n");
+
+   return rt_eval (rt, args[0], args[1]);
+}
+
+static atom_t *builtins_operator (rt_t *rt, atom_t *sym,
+                                  atom_t **args, size_t nargs,
                                   char op, double startval)
 {
    bool error = true;
@@ -128,6 +163,7 @@ static atom_t *builtins_operator (rt_t *rt, atom_t **args, size_t nargs,
 
    nargs = nargs;
    rt = rt;
+   sym = sym;
 
    for (size_t i=0; args[i]; i++) {
 
@@ -152,9 +188,7 @@ static atom_t *builtins_operator (rt_t *rt, atom_t **args, size_t nargs,
                    break;
 
          case '-':
-                   printf ("Pre Set final: [%lf]\n", final);
                    final -= is_int ? GETINT : GETFLOAT;
-                   printf ("Post Set final: [%lf]\n", final);
                    break;
 
          case '/': final /= is_int ? GETINT : GETFLOAT;
@@ -189,22 +223,22 @@ errorexit:
    return ret;
 }
 
-atom_t *builtins_PLUS (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_PLUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, args, nargs, '+', 0);
+   return builtins_operator (rt, sym, args, nargs, '+', 0);
 }
 
-atom_t *builtins_MINUS (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_MINUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, args, nargs, '-', -1);
+   return builtins_operator (rt, sym, args, nargs, '-', -1);
 }
 
-atom_t *builtins_DIVIDE (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_DIVIDE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, args, nargs, '/', -1);
+   return builtins_operator (rt, sym, args, nargs, '/', -1);
 }
 
-atom_t *builtins_MULTIPLY (rt_t *rt, atom_t **args, size_t nargs)
+atom_t *builtins_MULTIPLY (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, args, nargs, '*', 1);
+   return builtins_operator (rt, sym, args, nargs, '*', 1);
 }

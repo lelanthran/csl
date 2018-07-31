@@ -40,7 +40,7 @@ int main (void)
 
    parser_print (parser, 1, stdout);
 
-   atom_t *result = rt_eval (rt, parser);
+   atom_t *result = rt_eval (rt, NULL, parser);
    if (!result) {
       XERROR ("Failed to execute expression\n");
       goto errorexit;

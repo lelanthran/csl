@@ -26,7 +26,7 @@ extern "C" {
    const atom_t *rt_symbol_find (atom_t *symbols, const atom_t *name);
    atom_t *rt_symbol_remove (atom_t *symbols, const atom_t *name);
 
-   atom_t *rt_eval (rt_t *rt, atom_t *atom);
+   atom_t *rt_eval (rt_t *rt, atom_t *symbols, atom_t *atom);
 
    void rt_print (rt_t *rt, FILE *outf);
 

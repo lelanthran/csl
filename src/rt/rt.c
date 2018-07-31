@@ -32,7 +32,7 @@ atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
       name, value, NULL,
    };
 
-   atom_t *tlist = builtins_LIST (NULL, tmp, 2);
+   atom_t *tlist = builtins_LIST (NULL, NULL, tmp, 2);
    if (!tlist) {
       goto errorexit;
    }
@@ -41,7 +41,7 @@ atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
    tmp[1] = tlist;
 
    // TODO: Remove existing entry first
-   if ((ret = builtins_NAPPEND (NULL, tmp, 2))==NULL)
+   if ((ret = builtins_NAPPEND (NULL, NULL, tmp, 2))==NULL)
       goto errorexit;
 
    error = false;
@@ -65,10 +65,11 @@ errorexit:
 const atom_t *rt_symbol_find (atom_t *symbols, const atom_t *name)
 {
    const char *strname = NULL;
-   size_t len = atom_list_length (symbols);
 
-   if (!name)
+   if (!name || !symbols)
       return NULL;
+
+   size_t len = atom_list_length (symbols);
 
    strname = atom_to_string (name);
 
@@ -116,6 +117,7 @@ static struct g_native_funcs_t {
    {  "eval",        builtins_EVAL        },
    {  "print",       builtins_PRINT       },
    {  "concat",      builtins_CONCAT      },
+   {  "let",         builtins_LET         },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
@@ -169,9 +171,14 @@ void rt_del (rt_t *rt)
    free (rt);
 }
 
-const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
+const atom_t *rt_eval_symbol (rt_t *rt, atom_t *sym, atom_t *atom)
 {
    const atom_t *entry = NULL;
+
+   entry = rt_symbol_find (sym, atom);
+   if (entry) {
+      return atom_list_index (entry, 1);
+   }
 
    entry = rt_symbol_find (rt->symbols, atom);
    if (!entry) {
@@ -182,14 +189,15 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *atom)
    return atom_list_index (entry, 1);
 }
 
-static atom_t *rt_funcall_native (rt_t *rt, atom_t **args, size_t nargs)
+static atom_t *rt_funcall_native (rt_t *rt, atom_t *sym,
+                                  atom_t **args, size_t nargs)
 {
    rt_builtins_fptr_t *fptr = args[0]->data;
 
-   return fptr (rt, &args[1], nargs);
+   return fptr (rt, sym, &args[1], nargs);
 }
 
-static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
+static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 {
    atom_t *ret = NULL;
    atom_t *func = NULL;
@@ -206,7 +214,7 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
       if (rt->flags & FLAG_QUOTE) {
          tmp = atom_dup (tmp);
       } else {
-         tmp = rt_eval (rt, tmp);
+         tmp = rt_eval (rt, sym, tmp);
       }
       rt->flags &= ~FLAG_QUOTE;
 
@@ -232,7 +240,7 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *atom)
       // TODO: Implement FFI
    }
    if (func && func->type==atom_NATIVE) {
-      ret = rt_funcall_native (rt, (atom_t **)args, --nargs);
+      ret = rt_funcall_native (rt, sym, (atom_t **)args, --nargs);
    }
 
    if (!ret) {
@@ -249,7 +257,7 @@ errorexit:
    return ret;
 }
 
-atom_t *rt_eval (rt_t *rt, atom_t *atom)
+atom_t *rt_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 {
    bool error = true;
    atom_t *tmp = NULL;
@@ -260,14 +268,15 @@ atom_t *rt_eval (rt_t *rt, atom_t *atom)
       case atom_STRING:
       case atom_INT:
       case atom_QUOTE:
-      case atom_FLOAT:     tmp = atom_dup (atom);                       break;
+      case atom_FLOAT:  tmp = atom_dup (atom);                           break;
 
-      case atom_SYMBOL:    tmp = atom_dup (rt_eval_symbol (rt, atom));  break;
+      case atom_SYMBOL: tmp = atom_dup (rt_eval_symbol (rt, sym, atom)); break;
 
-      case atom_LIST:      tmp = rt_list_eval (rt, atom);               break;
+      case atom_LIST:   tmp = rt_list_eval (rt, sym, atom);              break;
 
+      case atom_NIL:    tmp = atom_new (atom_NIL, NULL);                 break;
       case atom_ENDL:
-      case atom_UNKNOWN:   tmp = NULL;                                  break;
+      case atom_UNKNOWN:   tmp = NULL;                                   break;
    }
 
    if (!tmp) {
