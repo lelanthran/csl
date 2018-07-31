@@ -206,7 +206,7 @@ errorexit:
    atom_del (tmpsym);
    atom_del (allsyms);
 
-   return NULL;
+   return ret;
 }
 
 static atom_t *builtins_operator (rt_t *rt, atom_t *sym,

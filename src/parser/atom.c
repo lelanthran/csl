@@ -427,7 +427,7 @@ atom_t *atom_concatenate (const atom_t *a, ...)
       size_t len = atom_list_length (a);
 
       for (size_t i=0; i<len; i++) {
-         atom_t *tmp = (atom_t *)atom_list_index (a, i);
+         atom_t *tmp = atom_dup (atom_list_index (a, i));
          if (!(atom_list_ins_tail (ret, tmp))) {
             goto errorexit;
          }
