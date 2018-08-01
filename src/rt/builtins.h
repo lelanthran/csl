@@ -23,6 +23,7 @@ atom_t *builtins_PRINT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 atom_t *builtins_CONCAT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 
 atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 
 atom_t *builtins_PLUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);

@@ -154,6 +154,31 @@ atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return ret;
 }
 
+atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   if (nargs!=3) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too many arguments for FUNCALL (found %zu). Possible "
+                       "unterminated list.\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
+      return NULL;
+   }
+
+   atom_t *fname = atom_dup (args[0]),
+          *fval = atom_list_new ();
+
+   atom_list_ins_tail (fval, atom_dup (args[1]));
+   atom_list_ins_tail (fval, atom_dup (args[2]));
+   fname->flags |= ATOM_FLAG_FUNC;
+
+   atom_t *ret = rt_symbol_add (rt->symbols, fname, fval);
+
+   return ret;
+}
+
 atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
    bool error = true;
@@ -173,11 +198,11 @@ atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
       return NULL;
    }
 
-   printf ("*****************************************************\n");
+   printf ("+++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
    atom_print (args[0], 5, stdout);
    printf ("*****************************************************\n");
    atom_print (args[1], 5, stdout);
-   printf ("*****************************************************\n");
+   printf (".....................................................\n");
 
    const atom_t *fargs = args[0],
                 *fparam = atom_list_index (args[1], 0),
@@ -194,10 +219,6 @@ atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    }
 
    ret = rt_eval (rt, allsyms, body);
-
-   printf ("*****************************************************\n");
-   atom_print (ret, 5, stdout);
-   printf ("*****************************************************\n");
 
    error = false;
 

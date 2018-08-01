@@ -397,6 +397,7 @@ atom_t *atom_dup (const atom_t *atom)
       goto errorexit;
 
    ret->type = atom->type;
+   ret->flags = atom->flags;
 
    error = false;
 
@@ -518,6 +519,8 @@ void atom_print (atom_t *atom, size_t depth, FILE *outf)
 
    if (funcs && funcs->prn_fptr) {
       funcs->prn_fptr (atom, depth, outf);
+      print_depth (depth, outf);
+      fprintf (outf, "   Flags: [0x%02x]\n", atom->flags);
    }
 }
 

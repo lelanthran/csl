@@ -37,6 +37,8 @@ atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
       goto errorexit;
    }
 
+   tlist->flags = name->flags;
+
    tmp[0] = symbols;
    tmp[1] = tlist;
 
@@ -118,6 +120,7 @@ static struct g_native_funcs_t {
    {  "print",       builtins_PRINT       },
    {  "concat",      builtins_CONCAT      },
    {  "let",         builtins_LET         },
+   {  "defun",       builtins_DEFUN       },
    {  "funcall",     builtins_FUNCALL     },
 
    {  "+",           builtins_PLUS        },
@@ -199,6 +202,37 @@ static atom_t *rt_funcall_native (rt_t *rt, atom_t *sym,
    return fptr (rt, sym, &args[1], nargs);
 }
 
+static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
+                                  atom_t **args, size_t nargs)
+{
+   bool error = true;
+   atom_t *ret = NULL,
+          *fargs = atom_list_new ();
+
+   for (size_t i=0; args[i]; i++) {
+      if (!atom_list_ins_tail (fargs, args[i]))
+         goto errorexit;
+   }
+
+   printf ("####################################################\n");
+   for (size_t i=0; i<atom_list_length (fargs); i++) {
+      printf ("[%zu]:  ", i);
+      atom_print (atom_list_index (fargs, i), 0, stdout);
+      printf ("\\\\\\\\\\\n");
+   }
+   printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+   atom_t *fc_args[] = { fargs, args[0], NULL };
+
+   atom_del (fargs);
+
+   return builtins_FUNCALL (rt, sym, fc_args, 2);
+
+errorexit:
+   atom_del (fargs);
+   return NULL;
+}
+
 static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 {
    atom_t *ret = NULL;
@@ -238,11 +272,28 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 
    func = ll_index (args, 0);
 
-   if (func && func->type==atom_FFI) {
-      // TODO: Implement FFI
-   }
-   if (func && func->type==atom_NATIVE) {
-      ret = rt_funcall_native (rt, sym, (atom_t **)args, --nargs);
+   if (!func)
+      goto errorexit;
+
+   printf (">>>>>>>>>>>>>>>>>>>>>>>>>\n");
+   atom_print (func, 0, stdout);
+   printf ("<<<<<<<<<<<<<<<<<<<<<<<\n");
+
+   switch (func->type) {
+      case atom_FFI:
+         // TODO: Implement FFI
+         break;
+
+      case atom_NATIVE:
+         ret = rt_funcall_native (rt, sym, (atom_t **)args, --nargs);
+         break;
+
+      default:
+         ret = func->flags == ATOM_FLAG_FUNC ?
+               rt_funcall_interp (rt, sym, (atom_t **)args, --nargs) :
+               NULL;
+
+         break;
    }
 
    if (!ret) {
