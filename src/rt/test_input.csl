@@ -1,5 +1,6 @@
 
 
+
 (list "two three"
    (list "next" 4 5.5)
    "more items"
@@ -32,9 +33,9 @@
 
 
 (define 'myfunc
-   '(let '((a 11) (b 2))
-   '(eval (print "Function")
-         '(* a b))))
+   '(let ((a 11) (b 2))
+    (eval (print "Function")
+         (* a b))))
 
 (print "Eval result ............" (eval myfunc))
 
@@ -44,5 +45,6 @@
 
 
    (undefine '+)
+
 
 

@@ -509,6 +509,11 @@ errorexit:
 
 void atom_print (atom_t *atom, size_t depth, FILE *outf)
 {
+   if (!atom) {
+      fprintf (outf, "NULL ATOM\n");
+      return;
+   }
+
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
 
    if (funcs && funcs->prn_fptr) {

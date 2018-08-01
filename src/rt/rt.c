@@ -184,6 +184,7 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *sym, atom_t *atom)
    entry = rt_symbol_find (rt->symbols, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
+      atom_print (sym, 5, stdout);
       return NULL;
    }
 
