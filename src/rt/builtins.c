@@ -70,8 +70,7 @@ atom_t *builtins_DEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
       return NULL;
    }
 
-   return atom_dup (rt_symbol_add
-                     (rt->symbols, atom_dup (args[0]), atom_dup (args[1])));
+   return atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
 }
 
 atom_t *builtins_UNDEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)

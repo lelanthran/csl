@@ -1,10 +1,61 @@
 
+
+
+(list "two three"
+   (list "next" 4 5.5)
+   "more items"
+   (list 'another
+      '(list (("nested list" with)))
+   666))
+
+
+   (+ (+ 5 4.3333333 3 2 1) 1.1 7 )
+   (- 3.0 0.0009)
+   (* 2 2 2)
+   (/ 25 5.5)
+
+   (define 'var1 "fifty")
+
+   (* var1 5)
+
+   (print "Hello World" (list 1 2 3 4))
+
+   (define 'expr_results
+         (eval (+ 1 2)
+               (- 5 2)
+               (* 3 2)
+               (/ 7 2)))
+
+   (define 'biglist
+           (concat '(1 2 3 4) '(a b c d) '(5 6 7 8) '(A B C D)))
+
+   (print "Printing Biglist" biglist)
+
+
+(define 'myfunc
+   '(let '((a 11) (b 2))
+     '(eval (print "Function")
+         (* a b))))
+
+(print "Eval result ............" (eval myfunc))
+
+(define 'realfunc '((a b) (+ a b)))
+
+(funcall '(1 2) realfunc)
+
+(define 'fadd '(funcall '(1 2) 'realfunc))
+
+(fadd 1 2)
+
+
 (eval
    '(defun 'realfunc '(a b)
       '(+ a b))
 
    '(realfunc 1 2))
 
+
+   (undefine '+)
 
 
 

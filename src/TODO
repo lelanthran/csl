@@ -1,6 +1,10 @@
 
 1. Parser is ignoring the final token in a file. This is an error in the
    reader.
+   UPDATE: Rewrite parser to only present the next atom in the input (we
+   must read only a single atom at a time). This lets us do a REPL and
+   avoids the current errors with using a toplevel list to hold all the
+   atoms we read.
 
 -- 2. rt_new() currently loads each builtin individually. Must change to
 -- load everything in a loop (store the string/function pairs in an
@@ -21,13 +25,13 @@
 --    atom_LIST types result in each atom needing a pointer to its parent as
 --    well. The stack can be almost fully implemented in rt_t data objects)
 
-6. defun must not return anything, or if it does we must handle it
-properly - this is because:
-(defun 'test '(a b) '(+ a b)
-   => returns (symbol-table-entry) which gets stored in current list.
-
-(test 3 4)
-   => returns 7, which gets stored in current list.
-
-current list then consists of (test 7)
+--  6. defun must not return anything, or if it does we must handle it
+--  properly - this is because:
+--  (defun 'test '(a b) '(+ a b)
+--  => returns (symbol-table-entry) which gets stored in current list.
+--
+--  (test 3 4)
+--  => returns 7, which gets stored in current list.
+--
+--  current list then consists of (test 7)
 

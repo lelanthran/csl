@@ -249,9 +249,6 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
          tmp = rt_eval (rt, sym, tmp);
       }
 
-      printf ("eval result:\n");
-      atom_print (tmp, 0, stdout);
-
       rt->flags &= ~FLAG_QUOTE;
 
       if (!tmp) {
@@ -300,9 +297,6 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
          atom_list_ins_tail (ret, atom_dup (ll_index (args, i)));
       }
    }
-
-   printf ("return result:\n");
-   atom_print (ret, 0, stdout);
 
 errorexit:
    ll_iterate (args, (void (*) (void *))atom_del);
