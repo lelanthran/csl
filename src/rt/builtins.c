@@ -70,7 +70,8 @@ atom_t *builtins_DEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
       return NULL;
    }
 
-   return rt_symbol_add (rt->symbols, atom_dup (args[0]), atom_dup (args[1]));
+   return atom_dup (rt_symbol_add
+                     (rt->symbols, atom_dup (args[0]), atom_dup (args[1])));
 }
 
 atom_t *builtins_UNDEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
@@ -174,18 +175,17 @@ atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    atom_list_ins_tail (fval, atom_dup (args[2]));
    fname->flags |= ATOM_FLAG_FUNC;
 
-   atom_t *ret = rt_symbol_add (rt->symbols, fname, fval);
+   atom_t *ret = atom_dup (rt_symbol_add (rt->symbols, fname, fval));
 
-   atom_del (ret);
-   ret = NULL;
+   // atom_del (ret);
+   atom_del (fname);
+   atom_del (fval);
 
    return ret;
 }
 
 atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   bool error = true;
-
    atom_t *tmpsym = NULL,
           *allsyms = NULL,
           *ret = NULL;
@@ -222,8 +222,6 @@ atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    }
 
    ret = rt_eval (rt, allsyms, body);
-
-   error = false;
 
 errorexit:
 

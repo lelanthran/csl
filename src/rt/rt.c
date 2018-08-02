@@ -24,7 +24,7 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
    return ret;
 }
 
-atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
+const atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -55,13 +55,13 @@ errorexit:
    if (error) {
       ret = NULL;
    } else {
-      ret = tlist;
+      ret = rt_symbol_find (symbols, name);
    }
 
    //atom_del (ret);
-   //atom_del (tlist);
-   atom_del (name);
-   atom_del (value);
+   atom_del (tlist);
+   //atom_del (name);
+   //atom_del (value);
 
    return ret;
 }
@@ -144,13 +144,13 @@ rt_t *rt_new (void)
    ret->roots = atom_list_new ();
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
-      atom_t *tmp =
-         rt_symbol_add (ret->symbols,
-                        atom_new (atom_SYMBOL, g_native_funcs[i].name),
-                        rt_atom_native (g_native_funcs[i].fptr));
+      atom_t *sym = atom_new (atom_SYMBOL, g_native_funcs[i].name);
+      atom_t *value = rt_atom_native (g_native_funcs[i].fptr);
+      const atom_t *tmp = rt_symbol_add (ret->symbols, sym, value);
       if (!tmp)
          goto errorexit;
-      atom_del (tmp);
+      atom_del (sym);
+      atom_del (value);
    }
 
    error = false;
@@ -212,7 +212,7 @@ static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
           *fargs = atom_list_new ();
 
    for (size_t i=1; args[i]; i++) {
-      if (!atom_list_ins_tail (fargs, args[i]))
+      if (!atom_list_ins_tail (fargs, atom_dup (args[i])))
          goto errorexit;
    }
 
@@ -221,7 +221,7 @@ static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
    ret = builtins_FUNCALL (rt, sym, fc_args, 2);
 
 errorexit:
-   // atom_del (fargs);
+   atom_del (fargs);
    return ret;
 }
 

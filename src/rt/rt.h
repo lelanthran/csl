@@ -22,7 +22,7 @@ extern "C" {
    rt_t *rt_new (void);
    void rt_del (rt_t *rt);
 
-   atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value);
+   const atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value);
    const atom_t *rt_symbol_find (atom_t *symbols, const atom_t *name);
    atom_t *rt_symbol_remove (atom_t *symbols, const atom_t *name);
 

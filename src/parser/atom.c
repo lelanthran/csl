@@ -9,8 +9,6 @@
 #include "xerror/xerror.h"
 #include "xstring/xstring.h"
 
-#define FLAG_BORROWED      (1 << 0)
-
 typedef atom_t *(atom_newfunc_t) (atom_t *dst, const char *);
 typedef void (atom_delfunc_t) (atom_t *);
 typedef void (atom_prnfunc_t) (atom_t *, size_t, FILE *);
@@ -341,11 +339,6 @@ void atom_del (atom_t *atom)
 {
    if (!atom)
       return;
-
-   if (atom->flags & FLAG_BORROWED) {
-      free (atom);
-      return;
-   }
 
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
    if (funcs && funcs->del_fptr) {
