@@ -227,6 +227,8 @@ errorexit:
    atom_del (tmpsym);
    atom_del (allsyms);
 
+   atom_print (ret, 0, stdout);
+
    return ret;
 }
 

@@ -4,7 +4,6 @@
 
 (realfunc 1 2)
 
-(undefine '+)
 
 
 

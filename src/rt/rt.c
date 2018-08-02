@@ -38,6 +38,8 @@ atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
    }
 
    tlist->flags = name->flags;
+   ((atom_t *)atom_list_index (tlist, 0))->flags = name->flags;
+   ((atom_t *)atom_list_index (tlist, 1))->flags = name->flags;
 
    tmp[0] = symbols;
    tmp[1] = tlist;
@@ -209,29 +211,21 @@ static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
    atom_t *ret = NULL,
           *fargs = atom_list_new ();
 
-   for (size_t i=0; args[i]; i++) {
+   for (size_t i=1; args[i]; i++) {
       if (!atom_list_ins_tail (fargs, args[i]))
          goto errorexit;
    }
 
-   printf ("####################################################\n");
-   for (size_t i=0; i<atom_list_length (fargs); i++) {
-      printf ("[%zu]:  ", i);
-      atom_print (atom_list_index (fargs, i), 0, stdout);
-      printf ("\\\\\\\\\\\n");
-   }
-   printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
    atom_t *fc_args[] = { fargs, args[0], NULL };
 
-   atom_del (fargs);
-
-   return builtins_FUNCALL (rt, sym, fc_args, 2);
+   ret = builtins_FUNCALL (rt, sym, fc_args, 2);
 
 errorexit:
-   atom_del (fargs);
-   return NULL;
+   //atom_del (fargs);
+   return ret;
 }
+
+static size_t depth;
 
 static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 {
@@ -244,10 +238,15 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
    args = ll_new ();
    size_t llen = atom_list_length (atom);
 
+   depth++;
    for (size_t i=0; i<llen; i++) {
 
       atom_t *tmp = (atom_t *)atom_list_index (atom, i);
-      if (rt->flags & FLAG_QUOTE) {
+
+         printf ("[%zu][%zu/%zu] FOUND \n", depth, i, llen);
+         atom_print (tmp, 0, stdout);
+
+      if (rt->flags & FLAG_QUOTE || atom->flags & ATOM_FLAG_FUNC) {
          tmp = atom_dup (tmp);
       } else {
          tmp = rt_eval (rt, sym, tmp);
@@ -275,10 +274,8 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
    if (!func)
       goto errorexit;
 
-   printf (">>>>>>>>>>>>>>>>>>>>>>>>>\n");
+   printf ("[%zu][%zu] Executing \n", depth, nargs);
    atom_print (func, 0, stdout);
-   printf ("<<<<<<<<<<<<<<<<<<<<<<<\n");
-
    switch (func->type) {
       case atom_FFI:
          // TODO: Implement FFI
@@ -293,8 +290,11 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
                rt_funcall_interp (rt, sym, (atom_t **)args, --nargs) :
                NULL;
 
+         printf ("[%zu] RETURNING\n", depth);
+         atom_print (ret, 0, stdout);
          break;
    }
+
 
    if (!ret) {
       ret = atom_list_new ();
@@ -303,10 +303,12 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
       }
    }
 
+
 errorexit:
    ll_iterate (args, (void (*) (void *))atom_del);
    ll_del (args);
 
+   depth--;
    return ret;
 }
 
