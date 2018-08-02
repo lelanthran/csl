@@ -1,8 +1,9 @@
 
-(defun 'realfunc '(a b)
-   '(+ a b))
+(eval
+   '(defun 'realfunc '(a b)
+      '(+ a b))
 
-(realfunc 1 2)
+   '(realfunc 1 2))
 
 
 

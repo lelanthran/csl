@@ -46,7 +46,7 @@ int main (void)
       goto errorexit;
    }
    printf ("RESULT:\n");
-   parser_print (result, 0, stdout);
+   atom_print (result, 0, stdout);
 
    printf ("RUNTIME:\n");
    rt_print (rt, stdout);

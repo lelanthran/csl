@@ -58,7 +58,7 @@ errorexit:
       ret = tlist;
    }
 
-   // atom_del (ret);
+   //atom_del (ret);
    //atom_del (tlist);
    atom_del (name);
    atom_del (value);
@@ -221,7 +221,7 @@ static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
    ret = builtins_FUNCALL (rt, sym, fc_args, 2);
 
 errorexit:
-   //atom_del (fargs);
+   // atom_del (fargs);
    return ret;
 }
 
@@ -239,22 +239,18 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
    size_t llen = atom_list_length (atom);
 
    depth++;
-   printf ("[%zu][%zu] STARTING \n", depth, llen);
-   atom_print (atom, 0, stdout);
    for (size_t i=0; i<llen; i++) {
 
       atom_t *tmp = (atom_t *)atom_list_index (atom, i);
-
-         printf ("[%zu][%zu/%zu] FOUND \n", depth, i, llen);
-         atom_print (tmp, 0, stdout);
 
       if (rt->flags & FLAG_QUOTE || tmp->flags & ATOM_FLAG_FUNC) {
          tmp = atom_dup (tmp);
       } else {
          tmp = rt_eval (rt, sym, tmp);
       }
-         printf ("[%zu][%zu/%zu] EVAL RESULT \n", depth, i, llen);
-         atom_print (tmp, 0, stdout);
+
+      printf ("eval result:\n");
+      atom_print (tmp, 0, stdout);
 
       rt->flags &= ~FLAG_QUOTE;
 
@@ -274,18 +270,11 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
       nargs++;
    }
 
-   printf ("[%zu][%zu] ENDING \n", depth, llen);
-   for (size_t i=0; args[i]; i++) {
-      atom_print (args[i], 0, stdout);
-   }
-
    func = ll_index (args, 0);
 
    if (!func)
       goto errorexit;
 
-   printf ("[%zu][%zu] Executing \n", depth, nargs);
-   atom_print (func, 0, stdout);
    switch (func->type) {
       case atom_FFI:
          // TODO: Implement FFI
@@ -298,22 +287,22 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
       default:
          ret = func->flags == ATOM_FLAG_FUNC ?
                rt_funcall_interp (rt, sym, (atom_t **)args, --nargs) :
-               atom_new (atom_NIL, NULL);
+               NULL;
 
-         printf ("[%zu] RETURNING\n", depth);
-         atom_print (ret, 0, stdout);
-         ret->flags = 0;
+         if (ret) ret->flags = 0;
          break;
    }
 
 
    if (!ret) {
       ret = atom_list_new ();
-      for (size_t i=0; i<llen; i++) {
+      for (size_t i=0; i<nargs; i++) {
          atom_list_ins_tail (ret, atom_dup (ll_index (args, i)));
       }
    }
 
+   printf ("return result:\n");
+   atom_print (ret, 0, stdout);
 
 errorexit:
    ll_iterate (args, (void (*) (void *))atom_del);
