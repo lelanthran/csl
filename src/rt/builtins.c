@@ -176,6 +176,9 @@ atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 
    atom_t *ret = rt_symbol_add (rt->symbols, fname, fval);
 
+   atom_del (ret);
+   ret = NULL;
+
    return ret;
 }
 

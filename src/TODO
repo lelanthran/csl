@@ -20,3 +20,14 @@
 --    (NOTE: Have to implement a stack, because adding symbol tables to
 --    atom_LIST types result in each atom needing a pointer to its parent as
 --    well. The stack can be almost fully implemented in rt_t data objects)
+
+6. defun must not return anything, or if it does we must handle it
+properly - this is because:
+(defun 'test '(a b) '(+ a b)
+   => returns (symbol-table-entry) which gets stored in current list.
+
+(test 3 4)
+   => returns 7, which gets stored in current list.
+
+current list then consists of (test 7)
+

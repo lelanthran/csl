@@ -239,6 +239,8 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
    size_t llen = atom_list_length (atom);
 
    depth++;
+   printf ("[%zu][%zu] STARTING \n", depth, llen);
+   atom_print (atom, 0, stdout);
    for (size_t i=0; i<llen; i++) {
 
       atom_t *tmp = (atom_t *)atom_list_index (atom, i);
@@ -246,16 +248,19 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
          printf ("[%zu][%zu/%zu] FOUND \n", depth, i, llen);
          atom_print (tmp, 0, stdout);
 
-      if (rt->flags & FLAG_QUOTE || atom->flags & ATOM_FLAG_FUNC) {
+      if (rt->flags & FLAG_QUOTE || tmp->flags & ATOM_FLAG_FUNC) {
          tmp = atom_dup (tmp);
       } else {
          tmp = rt_eval (rt, sym, tmp);
       }
+         printf ("[%zu][%zu/%zu] EVAL RESULT \n", depth, i, llen);
+         atom_print (tmp, 0, stdout);
+
       rt->flags &= ~FLAG_QUOTE;
 
       if (!tmp) {
          XERROR ("Fatal error during evaluation\n");
-         goto errorexit;
+         continue;
       }
       if (tmp->type==atom_QUOTE) {
          atom_del (tmp);
@@ -267,6 +272,11 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
          goto errorexit;
 
       nargs++;
+   }
+
+   printf ("[%zu][%zu] ENDING \n", depth, llen);
+   for (size_t i=0; args[i]; i++) {
+      atom_print (args[i], 0, stdout);
    }
 
    func = ll_index (args, 0);
@@ -288,10 +298,11 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
       default:
          ret = func->flags == ATOM_FLAG_FUNC ?
                rt_funcall_interp (rt, sym, (atom_t **)args, --nargs) :
-               NULL;
+               atom_new (atom_NIL, NULL);
 
          printf ("[%zu] RETURNING\n", depth);
          atom_print (ret, 0, stdout);
+         ret->flags = 0;
          break;
    }
 
