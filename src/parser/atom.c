@@ -133,43 +133,43 @@ static void a_pr_list (atom_t *atom, size_t depth, FILE *outf)
 static void a_pr_quote (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->quot[%s]\n", (char *)atom->data);
+   fprintf (outf, "--->quot[%s]\n", (char *)atom->data);
 }
 
 static void a_pr_string (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->str[%s]\n", (char *)atom->data);
+   fprintf (outf, "--->str[%s]\n", (char *)atom->data);
 }
 
 static void a_pr_symbol (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->sym[%s]\n", (char *)atom->data);
+   fprintf (outf, "--->sym[%s]\n", (char *)atom->data);
 }
 
 static void a_pr_int (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->int[%" PRIi64 "]\n", *(int64_t *)atom->data);
+   fprintf (outf, "--->int[%" PRIi64 "]\n", *(int64_t *)atom->data);
 }
 
 static void a_pr_float (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->flt[%f]\n", *(double *)atom->data);
+   fprintf (outf, "--->flt[%f]\n", *(double *)atom->data);
 }
 
 static void a_pr_ffi (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->ffi[%p]\n", atom->data);
+   fprintf (outf, "--->ffi[%p]\n", atom->data);
 }
 
 static void a_pr_native (atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, " ->native[%p]\n", atom->data);
+   fprintf (outf, "--->native[%p]\n", atom->data);
 }
 
 static atom_t *a_dup_list (atom_t *dst, const atom_t *src)
@@ -518,8 +518,8 @@ void atom_print (atom_t *atom, size_t depth, FILE *outf)
 
    if (funcs && funcs->prn_fptr) {
       funcs->prn_fptr (atom, depth, outf);
-      print_depth (depth, outf);
-      fprintf (outf, "   Flags: [0x%02x]\n", atom->flags);
+      // print_depth (depth, outf);
+      // fprintf (outf, "   Flags: [0x%02x]\n", atom->flags);
    }
 }
 

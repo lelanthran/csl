@@ -22,16 +22,19 @@ int main (void)
       goto errorexit;
    }
 
-   if (!(atoms = parser_parse (tokens))) {
-      XERROR ("Failed to parse tokens\n");
-      goto errorexit;
+   size_t ntokens = 0;
+   for (size_t i=0; tokens[i]; i++) {
+      printf ("[%zu] : [%s]\n", i, token_string (tokens[i]));
+      ntokens++;
    }
 
-   for (size_t i=0; atoms[i]; i++) {
-      atom_print (atoms[i], 1, stdout);
-      atom_del (atoms[i]);
+   size_t index = 0;
+   while (index < ntokens) {
+      atom_t *atom = parser_parse (tokens, &index);
+      printf ("[%zu]: ", index);
+      atom_print (atom, 0, stdout);
+      atom_del (atom);
    }
-   ll_del (atoms);
 
    ret = EXIT_SUCCESS;
 

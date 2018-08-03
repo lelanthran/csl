@@ -1,6 +1,4 @@
 
-
-
 (list "two three"
    (list "next" 4 5.5)
    "more items"
@@ -48,14 +46,13 @@
 (fadd 1 2)
 
 
-(eval
-   '(defun 'realfunc '(a b)
-      '(+ a b))
+  (defun 'realfunc '(a b)
+      '(+ (* a a) (* b b)))
 
-   '(realfunc 1 2))
-
-
-   (undefine '+)
+  (realfunc 1 2)
+  (realfunc 3 4)
+  (realfunc 2 3)
+  (realfunc 4 5)
 
 
 

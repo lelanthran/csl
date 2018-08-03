@@ -14,8 +14,6 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
-   atom_t **atoms = NULL;
-
    rt_t *rt = NULL;
 
    if (!(rt = rt_new ())) {
@@ -29,22 +27,38 @@ int main (void)
       goto errorexit;
    }
 
-   if (!(atoms = parser_parse (tokens))) {
-      XERROR ("Failed to parse tokens\n");
-      goto errorexit;
+   size_t ntokens = 0;
+   for (size_t i=0; tokens[i]; i++) {
+      XERROR ("[%zu]: [%s]\n", i, token_string (tokens[i]));
+      ntokens++;
    }
 
-   for (size_t i=0; atoms[i]; i++) {
-      atom_print (atoms[i], 1, stdout);
-      atom_t *result = rt_eval (rt, NULL, atoms[i]);
+   size_t index = 0;
+   while (index < ntokens) {
+      atom_t *atom = NULL;
+      atom_t *result = NULL;
+
+      atom = parser_parse (tokens, &index);
+      if (!atom) {
+         XERROR ("Parser error near [%s]\n", token_string (tokens[index]));
+         goto errorexit;
+      }
+
+      printf ("Printing atom:\n");
+      atom_print (atom, 0, stdout);
+
+      result = rt_eval (rt, NULL, atom);
+
       if (!result) {
-         XERROR ("Failed to execute expression\n");
+         XERROR ("Eval error near [%s]\n", token_string (tokens[index]));
+         atom_del (atom);
          goto errorexit;
       }
       printf ("RESULT:\n");
       atom_print (result, 0, stdout);
       printf (":END-RESULT\n");
       atom_del (result);
+      atom_del (atom);
       result = NULL;
    }
 
@@ -61,11 +75,6 @@ errorexit:
       token_del (tokens[i]);
    }
    free (tokens);
-
-   for (size_t i=0; atoms[i]; i++) {
-      atom_del (atoms[i]);
-   }
-   ll_del (atoms);
 
    xerror_set_logfile (NULL);
 

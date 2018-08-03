@@ -14,7 +14,7 @@ typedef struct parser_tree_t parser_tree_t;
 extern "C" {
 #endif
 
-   atom_t **parser_parse (token_t **tokens);
+   atom_t *parser_parse (token_t **tokens, size_t *index);
 
 #ifdef __cplusplus
 };

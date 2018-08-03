@@ -12,72 +12,71 @@
 #include "xerror/xerror.h"
 
 
-static bool rparser (void ***list, token_t **tokens, size_t *idx, size_t max)
+static atom_t *rparser (token_t **tokens, size_t *index)
 {
    bool error = true;
+   atom_t *ret = NULL;
 
-   while ((*idx) < max - 1) {
-      atom_t *na = NULL;
-      const char *string = token_string (tokens[(*idx)]);
-      enum atom_type_t type = atom_UNKNOWN;
-      switch (token_type (tokens[(*idx)])) {
-         case token_INT:      type = atom_INT;     break;
-         case token_FLOAT:    type = atom_FLOAT;   break;
-         case token_SYMBOL:   type = atom_SYMBOL;  break;
-         case token_OPERATOR: type = atom_SYMBOL;  break;
-         case token_QUOTE:    type = atom_QUOTE;   break;
-         case token_STRING:   type = atom_STRING;  break;
-
-         case token_STARTL:   type = atom_LIST;    break;
-         case token_ENDL:     type = atom_ENDL;    break;
-
-         default:
-            XERROR ("Unknown atom [%s]\n", token_string (tokens[(*idx)]));
-            goto errorexit;
-      }
-
-      (*idx)++;
-
-      if (type==atom_ENDL)
-         return true;
-
-      if (!(na = atom_new (type, string)))
-         goto errorexit;
-
-      if (type==atom_LIST) {
-         if (!(rparser (list, tokens, idx, max))) {
-            XERROR ("Error from recursive function\n");
-            goto errorexit;
-         }
-
-      }
-
-      if (!(ll_ins_tail (list, na)))
-         goto errorexit;
-
+   if (!tokens[(*index)]) {
+      return NULL;
    }
+
+   const char *string = token_string (tokens[(*index)]);
+   enum atom_type_t type = atom_UNKNOWN;
+
+   switch (token_type (tokens[(*index)])) {
+      case token_INT:      type = atom_INT;     break;
+      case token_FLOAT:    type = atom_FLOAT;   break;
+      case token_SYMBOL:   type = atom_SYMBOL;  break;
+      case token_OPERATOR: type = atom_SYMBOL;  break;
+      case token_QUOTE:    type = atom_QUOTE;   break;
+      case token_STRING:   type = atom_STRING;  break;
+
+      case token_STARTL:   type = atom_LIST;    break;
+      case token_ENDL:     type = atom_ENDL;    break;
+
+      default:
+         XERROR ("Unknown atom [%s]\n", token_string (tokens[(*index)]));
+         goto errorexit;
+   }
+
+   *index += 1;
+
+   if (type==atom_ENDL) {
+      return NULL;
+   }
+
+   if (!(ret = atom_new (type, string))) {
+      return NULL;
+   }
+
+   if (type==atom_LIST) {
+      atom_t *child;
+      while ((child = rparser (tokens, index))) {
+         if (!(atom_list_ins_tail (ret, child)))
+            goto errorexit;
+      }
+   }
+
 
    error = false;
 
 errorexit:
 
-   return !error;
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+   return ret;
 }
 
-atom_t **parser_parse (token_t **tokens)
+atom_t *parser_parse (token_t **tokens, size_t *index)
 {
    bool error = true;
-   size_t index = 0;
    size_t ntokens = 0;
-   void **ret = ll_new ();
+   atom_t *ret = NULL;
 
-   if (!ret)
-      goto errorexit;
-
-   for (ntokens=0; tokens[ntokens]; ntokens++)
-      ;
-
-   if (!rparser (&ret, tokens, &index, ntokens))
+   if (!(ret = rparser (tokens, index)))
       goto errorexit;
 
    error = false;
@@ -85,11 +84,10 @@ atom_t **parser_parse (token_t **tokens)
 errorexit:
 
    if (error) {
-      ll_iterate (ret, (void (*) (void *))free);
-      ll_del (ret);
+      atom_del (ret);
       ret = NULL;
    }
 
-   return (atom_t **)ret;
+   return ret;
 }
 
