@@ -35,3 +35,7 @@
 --
 --  current list then consists of (test 7)
 
+6. Add in some facility for error handling, possibly some variation on
+   signals (signals emulated in program memory with setjmp/longjmp sounds
+   like a good idea).
+
