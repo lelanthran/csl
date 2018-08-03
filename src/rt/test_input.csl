@@ -46,13 +46,27 @@
 (fadd 1 2)
 
 
-  (defun 'realfunc '(a b)
-      '(+ (* a a) (* b b)))
+(defun 'realfunc '(a b)
+   '(+ (* a a) (* b b)))
 
-  (realfunc 1 2)
-  (realfunc 3 4)
-  (realfunc 2 3)
-  (realfunc 4 5)
+(realfunc 1 2)
+(realfunc 3 4)
+(realfunc 2 3)
 
+(print (<   5.5   5.4))
+(print (<=  5.5   5.4))
+(print (<=  5.5   5.5))
+(print (>   5.5   5.4))
+(print (>=  5.5   5.4))
+(print (>=  5.5   5.5))
+(print (=   5.5   5.4))
+(print (=   5.5   5.5))
 
-
+(print (<   7   6))
+(print (<=  7   6))
+(print (<=  7   7))
+(print (>   7   6))
+(print (>=  7   6))
+(print (>=  7   7))
+(print (=   7   6))
+(print (=   7   7))

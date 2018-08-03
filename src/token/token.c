@@ -20,7 +20,7 @@ struct token_t {
 
 static bool is_operator (int c)
 {
-   static const char *operators = "()+-*/!',<>=:";
+   static const char *operators = "()+-*/!',:";
    return strchr (operators, (char)c);
 }
 

@@ -61,6 +61,7 @@ extern "C" {
    atom_t *atom_list_ins_head (atom_t *atom, void *el);
 
    atom_t *atom_string_new (const char *s);
+   atom_t *atom_symbol_new (const char *s);
    atom_t *atom_int_new (int64_t i);
    atom_t *atom_float_new (double d);
 

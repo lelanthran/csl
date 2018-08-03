@@ -31,6 +31,11 @@ atom_t *builtins_MINUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 atom_t *builtins_DIVIDE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 atom_t *builtins_MULTIPLY (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 
+atom_t *builtins_LT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_LE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_GT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_GE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_EQ (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
 
 #ifdef __cplusplus
 };

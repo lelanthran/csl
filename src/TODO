@@ -1,10 +1,10 @@
 
-1. Parser is ignoring the final token in a file. This is an error in the
-   reader.
-   UPDATE: Rewrite parser to only present the next atom in the input (we
-   must read only a single atom at a time). This lets us do a REPL and
-   avoids the current errors with using a toplevel list to hold all the
-   atoms we read.
+-- 1. Parser is ignoring the final token in a file. This is an error in the
+--   reader.
+--   UPDATE: Rewrite parser to only present the next atom in the input (we
+--   must read only a single atom at a time). This lets us do a REPL and
+--   avoids the current errors with using a toplevel list to hold all the
+--   atoms we read.
 
 -- 2. rt_new() currently loads each builtin individually. Must change to
 -- load everything in a loop (store the string/function pairs in an
@@ -39,3 +39,10 @@
    signals (signals emulated in program memory with setjmp/longjmp sounds
    like a good idea).
 
+7. Tokeniser should be able to tokenise input in a buffer. Parser must
+   signal errors if it runs out of tokens (unterminated list).
+
+8. Tokeniser needs to ignore comments.
+
+9. Need to add type promotion/coercion rules when comparing and assign to
+   atoms.

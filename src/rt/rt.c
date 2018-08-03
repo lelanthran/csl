@@ -27,7 +27,7 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
 const atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
 {
    bool error = true;
-   atom_t *ret = NULL;
+   const atom_t *ret = NULL;
    atom_t *tmp[] = {
       name, value, NULL,
    };
@@ -129,6 +129,12 @@ static struct g_native_funcs_t {
    {  "defun",       builtins_DEFUN       },
    {  "funcall",     builtins_FUNCALL     },
 
+   {  "<",           builtins_LT          },
+   {  "<=",          builtins_LE          },
+   {  ">",           builtins_GT          },
+   {  ">=",          builtins_GE          },
+   {  "=",           builtins_GE          },
+
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
    {  "/",           builtins_DIVIDE      },
@@ -211,9 +217,10 @@ static atom_t *rt_funcall_native (rt_t *rt, atom_t *sym,
 static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
                                   atom_t **args, size_t nargs)
 {
-   bool error = true;
    atom_t *ret = NULL,
           *fargs = atom_list_new ();
+
+   nargs = nargs;
 
    for (size_t i=1; args[i]; i++) {
       if (!atom_list_ins_tail (fargs, atom_dup (args[i])))

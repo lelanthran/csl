@@ -232,9 +232,9 @@ errorexit:
    return ret;
 }
 
-static atom_t *builtins_operator (rt_t *rt, atom_t *sym,
-                                  atom_t **args, size_t nargs,
-                                  char op, double startval)
+static atom_t *builtins_opcalc (rt_t *rt, atom_t *sym,
+                                atom_t **args, size_t nargs,
+                                char op, double startval)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -305,20 +305,68 @@ errorexit:
 
 atom_t *builtins_PLUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, sym, args, nargs, '+', 0);
+   return builtins_opcalc (rt, sym, args, nargs, '+', 0);
 }
 
 atom_t *builtins_MINUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, sym, args, nargs, '-', -1);
+   return builtins_opcalc (rt, sym, args, nargs, '-', -1);
 }
 
 atom_t *builtins_DIVIDE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, sym, args, nargs, '/', -1);
+   return builtins_opcalc (rt, sym, args, nargs, '/', -1);
 }
 
 atom_t *builtins_MULTIPLY (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
-   return builtins_operator (rt, sym, args, nargs, '*', 1);
+   return builtins_opcalc (rt, sym, args, nargs, '*', 1);
 }
+
+static atom_t *builtins_opcmp (rt_t *rt, atom_t *sym,
+                               atom_t **args, size_t nargs,
+                               char op)
+{
+   bool error = true;
+   atom_t *ret = NULL;
+
+   if (nargs < 2) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too few arguments for FUNCALL (found %zu).\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
+      return NULL;
+   }
+
+   atom_t *lhs = args[0];
+   atom_t *rhs = args[1];
+
+   bool result = true;
+   while (result && lhs && rhs) {
+      atom_t *vlhs, *vrhs;
+      if (lhs->type == atom_INT && rhs->type == atom_INT) {
+         // TODO: add coercion functions into atom, otherwise this won't
+         // work. We should be able to coerce/promote types automatically.
+      }
+   }
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+atom_t *builtins_LT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_LE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_GT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_GE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_EQ (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+

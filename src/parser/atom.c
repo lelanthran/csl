@@ -587,6 +587,11 @@ atom_t *atom_string_new (const char *s)
    return atom_new (atom_STRING, s);
 }
 
+atom_t *atom_symbol_new (const char *s)
+{
+   return atom_new (atom_SYMBOL, s);
+}
+
 atom_t *atom_int_new (int64_t i)
 {
    char tmps[18];
