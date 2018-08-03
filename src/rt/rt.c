@@ -330,6 +330,7 @@ atom_t *rt_eval (rt_t *rt, atom_t *sym, atom_t *atom)
 
    if (!tmp) {
       XERROR ("Corrupt object [%p]\n", atom);
+      atom_print (atom, 0, stdout);
       goto errorexit;
    }
 

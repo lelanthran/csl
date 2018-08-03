@@ -14,7 +14,7 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
-   atom_t *parser = parser_new ();
+   atom_t **atoms = NULL;
 
    token_t **tokens = token_read (TESTFILE);
    if (!tokens) {
@@ -22,35 +22,21 @@ int main (void)
       goto errorexit;
    }
 
-   if (!parser) {
-      XERROR ("Unable to create parse-tree\n");
-      goto errorexit;
-   }
-
-   if (!parser_parse (parser, tokens)) {
+   if (!(atoms = parser_parse (tokens))) {
       XERROR ("Failed to parse tokens\n");
       goto errorexit;
    }
 
-   parser_print (parser, 1, stdout);
-
-#if 0
-   for (size_t i=0; tokens[i]; i++) {
-      printf ("[%s:%zu,%zu] %i : [%s]\n", token_fname (tokens[i]),
-                                          token_line (tokens[i]),
-                                          token_charpos (tokens[i]),
-                                          token_type (tokens[i]),
-                                          token_string (tokens[i]));
-      token_del (tokens[i]);
+   for (size_t i=0; atoms[i]; i++) {
+      atom_print (atoms[i], 1, stdout);
+      atom_del (atoms[i]);
    }
-   free (tokens);
-#endif
+   ll_del (atoms);
 
    ret = EXIT_SUCCESS;
 
 errorexit:
 
-   parser_del (parser);
    for (size_t i=0; tokens[i]; i++) {
       token_del (tokens[i]);
    }

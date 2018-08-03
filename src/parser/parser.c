@@ -12,35 +12,7 @@
 #include "xerror/xerror.h"
 
 
-atom_t *parser_new (void)
-{
-   bool error = true;
-   atom_t *ret = NULL;
-
-   if (!(ret = atom_new (atom_LIST, NULL)))
-      goto errorexit;
-
-   error = false;
-
-errorexit:
-
-   if (error) {
-      parser_del (ret);
-      ret = NULL;
-   }
-
-   return ret;
-}
-
-void parser_del (atom_t *ptree)
-{
-   if (!ptree)
-      return;
-
-   atom_del (ptree);
-}
-
-static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
+static bool rparser (void ***list, token_t **tokens, size_t *idx, size_t max)
 {
    bool error = true;
 
@@ -73,14 +45,14 @@ static bool rparser (atom_t *parent, token_t **tokens, size_t *idx, size_t max)
          goto errorexit;
 
       if (type==atom_LIST) {
-         if (!(rparser (na, tokens, idx, max))) {
+         if (!(rparser (list, tokens, idx, max))) {
             XERROR ("Error from recursive function\n");
             goto errorexit;
          }
 
       }
 
-      if (!(ll_ins_tail ((void ***)&parent->data, na)))
+      if (!(ll_ins_tail (list, na)))
          goto errorexit;
 
    }
@@ -92,32 +64,32 @@ errorexit:
    return !error;
 }
 
-bool parser_parse (atom_t *ptree, token_t **tokens)
+atom_t **parser_parse (token_t **tokens)
 {
    bool error = true;
    size_t index = 0;
    size_t ntokens = 0;
+   void **ret = ll_new ();
+
+   if (!ret)
+      goto errorexit;
 
    for (ntokens=0; tokens[ntokens]; ntokens++)
       ;
 
-   if (!rparser (ptree, tokens, &index, ntokens))
+   if (!rparser (&ret, tokens, &index, ntokens))
       goto errorexit;
 
    error = false;
 
 errorexit:
 
-   return !error;
+   if (error) {
+      ll_iterate (ret, (void (*) (void *))free);
+      ll_del (ret);
+      ret = NULL;
+   }
+
+   return (atom_t **)ret;
 }
 
-void parser_print (atom_t *ptree, size_t depth, FILE *outf)
-{
-   if (!outf)
-      outf = stdout;
-
-   if (!ptree)
-      return;
-
-   atom_print (ptree, depth, outf);
-}
