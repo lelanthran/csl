@@ -44,7 +44,11 @@ const atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
    tmp[0] = symbols;
    tmp[1] = tlist;
 
-   // TODO: Remove existing entry first
+   atom_t *current = rt_symbol_remove (symbols, name);
+   if (current) {
+      atom_del (current);
+   }
+
    if ((ret = builtins_NAPPEND (NULL, NULL, tmp, 2))==NULL)
       goto errorexit;
 
