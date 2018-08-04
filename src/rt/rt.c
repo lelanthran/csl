@@ -113,30 +113,30 @@ static struct g_native_funcs_t {
    const char *name;
    rt_builtins_fptr_t *fptr;
 } g_native_funcs[] = {
-   {  "list",        builtins_LIST        },
-   {  "nappend",     builtins_NAPPEND     },
-   {  "set",         builtins_SET         },
-   {  "define",      builtins_DEFINE      },
-   {  "undefine",    builtins_UNDEFINE    },
-   {  "eval",        builtins_EVAL        },
-   {  "print",       builtins_PRINT       },
-   {  "concat",      builtins_CONCAT      },
-   {  "let",         builtins_LET         },
-   {  "defun",       builtins_DEFUN       },
-   {  "funcall",     builtins_FUNCALL     },
+   {  "bi_list",        builtins_LIST        },
+   {  "bi_nappend",     builtins_NAPPEND     },
+   {  "bi_set",         builtins_SET         },
+   {  "bi_define",      builtins_DEFINE      },
+   {  "bi_undefine",    builtins_UNDEFINE    },
+   {  "bi_eval",        builtins_EVAL        },
+   {  "bi_print",       builtins_PRINT       },
+   {  "bi_concat",      builtins_CONCAT      },
+   {  "bi_let",         builtins_LET         },
+   {  "bi_defun",       builtins_DEFUN       },
+   {  "bi_funcall",     builtins_FUNCALL     },
 
-   {  "<",           builtins_LT          },
-   {  "<=",          builtins_LE          },
-   {  ">",           builtins_GT          },
-   {  ">=",          builtins_GE          },
-   {  "=",           builtins_EQ          },
+   {  "<",              builtins_LT          },
+   {  "<=",             builtins_LE          },
+   {  ">",              builtins_GT          },
+   {  ">=",             builtins_GE          },
+   {  "=",              builtins_EQ          },
 
-   {  "if",          builtins_IF          },
+   {  "if",             builtins_IF          },
 
-   {  "+",           builtins_PLUS        },
-   {  "-",           builtins_MINUS       },
-   {  "/",           builtins_DIVIDE      },
-   {  "*",           builtins_MULTIPLY    },
+   {  "+",              builtins_PLUS        },
+   {  "-",              builtins_MINUS       },
+   {  "/",              builtins_DIVIDE      },
+   {  "*",              builtins_MULTIPLY    },
 };
 
 rt_t *rt_new (void)

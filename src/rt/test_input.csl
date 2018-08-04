@@ -1,9 +1,9 @@
 
-(list "two three"
-   (list "next" 4 5.5)
+(bi_list "two three"
+   (bi_list "next" 4 5.5)
    "more items"
-   (list 'another
-      '(list (("nested list" with)))
+   (bi_list 'another
+      '(bi_list (("nested bi_list" with)))
    666))
 
 
@@ -12,89 +12,89 @@
    (* 2 2 2)
    (/ 25 5.5)
 
-   (define 'var1 "fifty")
+   (bi_define 'var1 "fifty")
 
    (* var1 5)
 
-   (print "Hello World" (list 1 2 3 4))
+   (bi_print "Hello World" (bi_list 1 2 3 4))
 
-   (define 'expr_results
-         (eval (+ 1 2)
+   (bi_define 'expr_results
+         (bi_eval (+ 1 2)
                (- 5 2)
                (* 3 2)
                (/ 7 2)))
 
-   (define 'biglist
-           (concat '(1 2 3 4) '(a b c d) '(5 6 7 8) '(A B C D)))
+   (bi_define 'biglist
+           (bi_concat '(1 2 3 4) '(a b c d) '(5 6 7 8) '(A B C D)))
 
-   (print "Printing Biglist" biglist)
+   (bi_print "Printing Biglist" biglist)
 
 
-(define 'myfunc
-   '(let '((a 11) (b 2))
-     '(eval (print "Function")
+(bi_define 'myfunc
+   '(bi_let '((a 11) (b 2))
+     '(bi_eval (bi_print "Function")
          (* a b))))
 
-(print "Eval result ............" (eval myfunc))
+(bi_print "Eval result ............" (bi_eval myfunc))
 
-(define 'realfunc '((a b) (+ a b)))
+(bi_define 'realfunc '((a b) (+ a b)))
 
-(funcall '(1 2) realfunc)
+(bi_funcall '(1 2) realfunc)
 
-(define 'fadd '(funcall '(1 2) 'realfunc))
+(bi_define 'fadd '(bi_funcall '(1 2) 'realfunc))
 
 (fadd 1 2)
 
 
-(defun 'realfunc '(a b)
+(bi_defun 'realfunc '(a b)
    '(+ (* a a) (* b b)))
 
 (realfunc 1 2)
 (realfunc 3 4)
 (realfunc 2 3)
 
-(print (<   5.5   5.4))
-(print (<=  5.5   5.4))
-(print (<=  5.5   5.5))
-(print (>   5.5   5.4))
-(print (>=  5.5   5.4))
-(print (>=  5.5   5.5))
-(print (=   5.5   5.4))
-(print (=   5.5   5.5))
+(bi_print (<   5.5   5.4))
+(bi_print (<=  5.5   5.4))
+(bi_print (<=  5.5   5.5))
+(bi_print (>   5.5   5.4))
+(bi_print (>=  5.5   5.4))
+(bi_print (>=  5.5   5.5))
+(bi_print (=   5.5   5.4))
+(bi_print (=   5.5   5.5))
 
-(print (<   7   6))
-(print (<=  7   6))
-(print (<=  7   7))
-(print (>   7   6))
-(print (>=  7   6))
-(print (>=  7   7))
-(print (=   7   6))
-(print (=   7   7))
+(bi_print (<   7   6))
+(bi_print (<=  7   6))
+(bi_print (<=  7   7))
+(bi_print (>   7   6))
+(bi_print (>=  7   6))
+(bi_print (>=  7   7))
+(bi_print (=   7   6))
+(bi_print (=   7   7))
 
-(print (<   7.2  6))
-(print (<=  7.2  6))
-(print (<=  7.2  7))
-(print (>   7.2  6))
-(print (>=  7.2  6))
-(print (>=  7.2  7))
-(print (=   7.2  6))
-(print (=   7.2  7))
+(bi_print (<   7.2  6))
+(bi_print (<=  7.2  6))
+(bi_print (<=  7.2  7))
+(bi_print (>   7.2  6))
+(bi_print (>=  7.2  6))
+(bi_print (>=  7.2  7))
+(bi_print (=   7.2  6))
+(bi_print (=   7.2  7))
 
-(define 'v1 5)
-(define 'v2 5.1)
-(define 'v2 5.4)
-(set 'v2 5.4)
+(bi_define 'v1 5)
+(bi_define 'v2 5.1)
+(bi_define 'v2 5.4)
+(bi_set 'v2 5.4)
 
 (if (>= v1 v2)
-   '(print "TRUE")
-   '(print "FALSE"))
+   '(bi_print "TRUE")
+   '(bi_print "FALSE"))
 
 (if (<= v1 v2)
-   '(print "TRUE")
-   '(print "FALSE"))
+   '(bi_print "TRUE")
+   '(bi_print "FALSE"))
 
 
-(defun 'fact '(x)
+(bi_defun 'fact '(x)
    '(if (= x 0)
       1
       '(* x (fact (- x 1)))))
