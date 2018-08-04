@@ -73,7 +73,6 @@ errorexit:
 atom_t *parser_parse (token_t **tokens, size_t *index)
 {
    bool error = true;
-   size_t ntokens = 0;
    atom_t *ret = NULL;
 
    if (!(ret = rparser (tokens, index)))

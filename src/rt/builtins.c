@@ -5,7 +5,7 @@
 #include "ll/ll.h"
 
 
-atom_t *builtins_LIST (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    bool error = true;
    atom_t *ret = NULL;
@@ -33,7 +33,7 @@ errorexit:
    return ret;
 }
 
-atom_t *builtins_NAPPEND (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    bool error = true;
 
@@ -56,7 +56,7 @@ errorexit:
    return error ? NULL : args[0];
 }
 
-atom_t *builtins_DEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
    if (nargs != 2) {
@@ -73,7 +73,7 @@ atom_t *builtins_DEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
 }
 
-atom_t *builtins_UNDEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_UNDEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
    atom_t *ret = NULL;
@@ -85,7 +85,7 @@ atom_t *builtins_UNDEFINE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return ret;
 }
 
-atom_t *builtins_EVAL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_EVAL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    nargs = nargs;
 
@@ -99,7 +99,7 @@ atom_t *builtins_EVAL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return ret;
 }
 
-atom_t *builtins_PRINT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_PRINT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    nargs = nargs;
    rt = rt;
@@ -112,7 +112,7 @@ atom_t *builtins_PRINT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return atom_new (atom_NIL, NULL);
 }
 
-atom_t *builtins_CONCAT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_CONCAT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    nargs = nargs;
    rt = rt;
@@ -140,7 +140,7 @@ errorexit:
    return ret;
 }
 
-atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    nargs = nargs;
 
@@ -154,8 +154,10 @@ atom_t *builtins_LET (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return ret;
 }
 
-atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_DEFUN (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
+   sym = sym;
+
    if (nargs!=3) {
       fprintf (stderr, "--------------------------------------\n");
       fprintf (stderr, "Too many arguments for FUNCALL (found %zu). Possible "
@@ -183,7 +185,7 @@ atom_t *builtins_DEFUN (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return ret;
 }
 
-atom_t *builtins_FUNCALL (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    atom_t *tmpsym = NULL,
           *allsyms = NULL,
@@ -232,8 +234,8 @@ errorexit:
    return ret;
 }
 
-static atom_t *builtins_opcalc (rt_t *rt, atom_t *sym,
-                                atom_t **args, size_t nargs,
+static atom_t *builtins_opcalc (rt_t *rt, const atom_t *sym,
+                                const atom_t **args, size_t nargs,
                                 char op, double startval)
 {
    bool error = true;
@@ -303,36 +305,35 @@ errorexit:
    return ret;
 }
 
-atom_t *builtins_PLUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_PLUS (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    return builtins_opcalc (rt, sym, args, nargs, '+', 0);
 }
 
-atom_t *builtins_MINUS (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_MINUS (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    return builtins_opcalc (rt, sym, args, nargs, '-', -1);
 }
 
-atom_t *builtins_DIVIDE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_DIVIDE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    return builtins_opcalc (rt, sym, args, nargs, '/', -1);
 }
 
-atom_t *builtins_MULTIPLY (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+atom_t *builtins_MULTIPLY (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    return builtins_opcalc (rt, sym, args, nargs, '*', 1);
 }
 
-static atom_t *builtins_opcmp (rt_t *rt, atom_t *sym,
-                               atom_t **args, size_t nargs,
-                               char op)
+static atom_t *builtins_opcmp (rt_t *rt, const atom_t *sym,
+                               const atom_t **args, size_t nargs)
 {
-   bool error = true;
-   atom_t *ret = NULL;
+   sym = sym;
+   rt = rt;
 
    if (nargs < 2) {
       fprintf (stderr, "--------------------------------------\n");
-      fprintf (stderr, "Too few arguments for FUNCALL (found %zu).\n", nargs);
+      fprintf (stderr, "Too few arguments for CMP (found %zu).\n", nargs);
       for (size_t i=0; i<nargs; i++) {
          fprintf (stderr, "element [%zu] = ", i);
          atom_print (args[i], 0, stderr);
@@ -340,33 +341,43 @@ static atom_t *builtins_opcmp (rt_t *rt, atom_t *sym,
       return NULL;
    }
 
-   atom_t *lhs = args[0];
-   atom_t *rhs = args[1];
+   const atom_t *lhs = args[0];
+   const atom_t *rhs = args[1];
 
-   bool result = true;
-   while (result && lhs && rhs) {
-      atom_t *vlhs, *vrhs;
-      if (lhs->type == atom_INT && rhs->type == atom_INT) {
-         // TODO: add coercion functions into atom, otherwise this won't
-         // work. We should be able to coerce/promote types automatically.
-      }
+   size_t i=0;
+   int64_t result = true;
+   while (result==0 && lhs && rhs) {
+      result = atom_cmp (lhs, rhs);
+      lhs = rhs;
+      rhs = args[++i];
    }
 
-   error = false;
-
-errorexit:
-
-   if (error) {
-      atom_del (ret);
-      ret = NULL;
-   }
-
-   return ret;
+   return atom_int_new (result);
 }
 
-atom_t *builtins_LT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
-atom_t *builtins_LE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
-atom_t *builtins_GT (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
-atom_t *builtins_GE (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
-atom_t *builtins_EQ (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+atom_t *builtins_LT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opcmp (rt, sym, args, nargs) < 0;
+}
+
+atom_t *builtins_LE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opcmp (rt, sym, args, nargs) <= 0;
+}
+
+atom_t *builtins_GT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opcmp (rt, sym, args, nargs) > 0;
+}
+
+atom_t *builtins_GE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opcmp (rt, sym, args, nargs) >= 0;
+}
+
+atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opcmp (rt, sym, args, nargs) == 0;
+}
+
 

@@ -11,7 +11,7 @@
 
 typedef atom_t *(atom_newfunc_t) (atom_t *dst, const char *);
 typedef void (atom_delfunc_t) (atom_t *);
-typedef void (atom_prnfunc_t) (atom_t *, size_t, FILE *);
+typedef void (atom_prnfunc_t) (const atom_t *, size_t, FILE *);
 typedef atom_t *(atom_dupfunc_t) (atom_t *dst, const atom_t *);
 typedef int (atom_cmpfunc_t) (const atom_t *lhs, const atom_t *rhs);
 
@@ -117,7 +117,7 @@ static void print_depth (size_t depth, FILE *outf)
       fprintf (outf, " ");
 }
 
-static void a_pr_list (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
 {
    void **children = atom->data;
    size_t nchildren = ll_length (children);
@@ -130,43 +130,43 @@ static void a_pr_list (atom_t *atom, size_t depth, FILE *outf)
    }
 }
 
-static void a_pr_quote (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_quote (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->quot[%s]\n", (char *)atom->data);
 }
 
-static void a_pr_string (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_string (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->str[%s]\n", (char *)atom->data);
 }
 
-static void a_pr_symbol (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_symbol (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->sym[%s]\n", (char *)atom->data);
 }
 
-static void a_pr_int (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_int (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->int[%" PRIi64 "]\n", *(int64_t *)atom->data);
 }
 
-static void a_pr_float (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_float (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->flt[%f]\n", *(double *)atom->data);
 }
 
-static void a_pr_ffi (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_ffi (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->ffi[%p]\n", atom->data);
 }
 
-static void a_pr_native (atom_t *atom, size_t depth, FILE *outf)
+static void a_pr_native (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
    fprintf (outf, "--->native[%p]\n", atom->data);
@@ -455,7 +455,7 @@ atom_t *atom_list_new (void)
    return atom_new (atom_LIST, NULL);
 }
 
-atom_t *atom_list_pair (atom_t *lnames, atom_t*lvalues)
+atom_t *atom_list_pair (const atom_t *lnames, const atom_t*lvalues)
 {
    bool error = true;
    atom_t *ret = atom_list_new ();
@@ -507,7 +507,7 @@ errorexit:
    return ret;
 }
 
-void atom_print (atom_t *atom, size_t depth, FILE *outf)
+void atom_print (const atom_t *atom, size_t depth, FILE *outf)
 {
    if (!atom) {
       fprintf (outf, "NULL ATOM\n");

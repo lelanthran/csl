@@ -49,9 +49,9 @@ extern "C" {
    atom_t *atom_dup (const atom_t *atom);
    atom_t *atom_concatenate (const atom_t *a, ...);
    atom_t *atom_list_new (void);
-   atom_t *atom_list_pair (atom_t *lnames, atom_t *lvalues);
+   atom_t *atom_list_pair (const atom_t *lnames, const atom_t *lvalues);
 
-   void atom_print (atom_t *atom, size_t depth, FILE *outf);
+   void atom_print (const atom_t *atom, size_t depth, FILE *outf);
    int atom_cmp (const atom_t *lhs, const atom_t *rhs);
 
    size_t atom_list_length (const atom_t *atom);

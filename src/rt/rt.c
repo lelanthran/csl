@@ -24,11 +24,11 @@ static atom_t *rt_atom_native (rt_builtins_fptr_t *fptr)
    return ret;
 }
 
-const atom_t *rt_symbol_add (atom_t *symbols, atom_t *name, atom_t *value)
+const atom_t *rt_symbol_add (atom_t *symbols, const atom_t *name, const atom_t *value)
 {
    bool error = true;
    const atom_t *ret = NULL;
-   atom_t *tmp[] = {
+   const atom_t *tmp[] = {
       name, value, NULL,
    };
 
@@ -70,7 +70,7 @@ errorexit:
    return ret;
 }
 
-const atom_t *rt_symbol_find (atom_t *symbols, const atom_t *name)
+const atom_t *rt_symbol_find (const atom_t *symbols, const atom_t *name)
 {
    const char *strname = NULL;
 
@@ -187,7 +187,7 @@ void rt_del (rt_t *rt)
    free (rt);
 }
 
-const atom_t *rt_eval_symbol (rt_t *rt, atom_t *sym, atom_t *atom)
+const atom_t *rt_eval_symbol (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
    const atom_t *entry = NULL;
 
@@ -206,16 +206,16 @@ const atom_t *rt_eval_symbol (rt_t *rt, atom_t *sym, atom_t *atom)
    return atom_list_index (entry, 1);
 }
 
-static atom_t *rt_funcall_native (rt_t *rt, atom_t *sym,
-                                  atom_t **args, size_t nargs)
+static atom_t *rt_funcall_native (rt_t *rt, const atom_t *sym,
+                                  const atom_t **args, size_t nargs)
 {
    rt_builtins_fptr_t *fptr = args[0]->data;
 
    return fptr (rt, sym, &args[1], nargs);
 }
 
-static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
-                                  atom_t **args, size_t nargs)
+static atom_t *rt_funcall_interp (rt_t *rt, const atom_t *sym,
+                                  const atom_t **args, size_t nargs)
 {
    atom_t *ret = NULL,
           *fargs = atom_list_new ();
@@ -227,7 +227,7 @@ static atom_t *rt_funcall_interp (rt_t *rt, atom_t *sym,
          goto errorexit;
    }
 
-   atom_t *fc_args[] = { fargs, args[0], NULL };
+   const atom_t *fc_args[] = { fargs, args[0], NULL };
 
    ret = builtins_FUNCALL (rt, sym, fc_args, 2);
 
@@ -238,7 +238,7 @@ errorexit:
 
 static size_t depth;
 
-static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
+static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
    atom_t *ret = NULL;
    atom_t *func = NULL;
@@ -289,12 +289,12 @@ static atom_t *rt_list_eval (rt_t *rt, atom_t *sym, atom_t *atom)
          break;
 
       case atom_NATIVE:
-         ret = rt_funcall_native (rt, sym, (atom_t **)args, --nargs);
+         ret = rt_funcall_native (rt, sym, (const atom_t **)args, --nargs);
          break;
 
       default:
          ret = func->flags == ATOM_FLAG_FUNC ?
-               rt_funcall_interp (rt, sym, (atom_t **)args, --nargs) :
+               rt_funcall_interp (rt, sym, (const atom_t **)args, --nargs) :
                NULL;
 
          if (ret) ret->flags = 0;
@@ -317,7 +317,7 @@ errorexit:
    return ret;
 }
 
-atom_t *rt_eval (rt_t *rt, atom_t *sym, atom_t *atom)
+atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
    bool error = true;
    atom_t *tmp = NULL;
