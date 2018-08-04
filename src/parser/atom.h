@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define ATOM_FLAG_FUNC        (1 << 0)
+#define ATOM_FLAG_QUOTE       (1 << 1)
 
 enum atom_type_t {
    atom_UNKNOWN = 0,
