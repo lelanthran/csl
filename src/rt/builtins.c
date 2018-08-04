@@ -56,6 +56,26 @@ errorexit:
    return error ? NULL : args[0];
 }
 
+atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   sym = sym;
+   if (nargs != 2) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too many arguments for SET (found %zu). Possible "
+                       "unterminated list.\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
+      return NULL;
+   }
+
+   atom_t *existing = rt_symbol_remove (rt->symbols, args[0]);
+   atom_del (existing);
+
+   return atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
+}
+
 atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
@@ -67,6 +87,12 @@ atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_
          fprintf (stderr, "element [%zu] = ", i);
          atom_print (args[i], 0, stderr);
       }
+      return NULL;
+   }
+
+   if (rt_symbol_find (rt->symbols, args[0])) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Symbol [%s] already DEFINED.\n", atom_to_string (args[0]));
       return NULL;
    }
 

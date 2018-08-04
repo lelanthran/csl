@@ -44,11 +44,6 @@ const atom_t *rt_symbol_add (atom_t *symbols, const atom_t *name, const atom_t *
    tmp[0] = symbols;
    tmp[1] = tlist;
 
-   atom_t *current = rt_symbol_remove (symbols, name);
-   if (current) {
-      atom_del (current);
-   }
-
    if ((ret = builtins_NAPPEND (NULL, NULL, tmp, 2))==NULL)
       goto errorexit;
 
@@ -120,6 +115,7 @@ static struct g_native_funcs_t {
 } g_native_funcs[] = {
    {  "list",        builtins_LIST        },
    {  "nappend",     builtins_NAPPEND     },
+   {  "set",         builtins_SET         },
    {  "define",      builtins_DEFINE      },
    {  "undefine",    builtins_UNDEFINE    },
    {  "eval",        builtins_EVAL        },

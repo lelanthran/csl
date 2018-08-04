@@ -82,6 +82,8 @@
 
 (define 'v1 5)
 (define 'v2 5.1)
+(define 'v2 5.4)
+(set 'v2 5.4)
 
 (if (>= v1 v2)
    '(print "TRUE")
@@ -90,4 +92,6 @@
 (if (<= v1 v2)
    '(print "TRUE")
    '(print "FALSE"))
+
+
 

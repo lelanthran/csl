@@ -14,6 +14,7 @@ extern "C" {
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
+atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_UNDEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
