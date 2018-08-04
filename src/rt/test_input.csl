@@ -29,7 +29,6 @@
 
    (bi_print "Printing Biglist" biglist)
 
-
 (bi_define 'myfunc
    '(bi_let '((a 11) (b 2))
      '(bi_eval (bi_print "Function")
@@ -99,5 +98,5 @@
       1
       '(* x (fact (- x 1)))))
 
-(fact 5)
+(fact 5) ; Call the function
 

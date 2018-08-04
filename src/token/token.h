@@ -22,7 +22,7 @@ enum token_type_t {
 extern "C" {
 #endif
 
-   token_t **token_read (const char *fname);
+   token_t **token_read_file (const char *fname);
    void token_del (token_t *token);
 
    const char *token_string (token_t *token);

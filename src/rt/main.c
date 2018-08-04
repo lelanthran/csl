@@ -21,7 +21,7 @@ int main (void)
       goto errorexit;
    }
 
-   token_t **tokens = token_read (TESTFILE);
+   token_t **tokens = token_read_file (TESTFILE);
    if (!tokens) {
       XERROR ("Unable to read tokens from [%s]\n", TESTFILE);
       goto errorexit;

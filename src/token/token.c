@@ -115,6 +115,20 @@ static token_t *get_next_token (FILE *inf, const char *fname,
          goto errorexit;
 
       c = fgetc (inf);
+
+      if (c == ';') {
+         c = fgetc (inf);
+         while (!ferror (inf) && !feof (inf)) {
+            if (c == '\n') {
+               break;
+            }
+            c = fgetc (inf);
+         }
+
+         ll++; cp = 1;
+         continue;
+      }
+
       if (c == '\n') {
          ll++; cp = 1;
       } else {
@@ -185,7 +199,7 @@ errorexit:
    return ret;
 }
 
-token_t **token_read (const char *fname)
+token_t **token_read_file (const char *fname)
 {
    bool error = true;
    FILE *inf = NULL;
@@ -214,7 +228,7 @@ token_t **token_read (const char *fname)
                      ? &load_fname->string[1]
                      : load_fname->string;
 
-         token_t **subv = token_read (tmpfname);
+         token_t **subv = token_read_file (tmpfname);
 
          token_del (load_fname);
 
