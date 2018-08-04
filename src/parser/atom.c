@@ -285,7 +285,10 @@ static int a_cmp_int (const atom_t *lhs, const atom_t *rhs)
    int64_t lhs_i = *(int64_t *)lhs->data,
            rhs_i = *(int64_t *)rhs->data;
 
-   return lhs_i - rhs_i;
+   if (lhs_i < rhs_i)      return -1;
+   if (lhs_i > rhs_i)      return 1;
+
+   return 0;
 }
 
 static int a_cmp_float (const atom_t *lhs, const atom_t *rhs)
@@ -293,7 +296,10 @@ static int a_cmp_float (const atom_t *lhs, const atom_t *rhs)
    double lhs_f = *(double *)lhs->data,
           rhs_f = *(double *)rhs->data;
 
-   return lhs_f - rhs_f;
+   if (lhs_f < rhs_f)      return -1;
+   if (lhs_f > rhs_f)      return 1;
+
+   return 0;
 }
 
 static int a_cmp_fptr (const atom_t *lhs, const atom_t *rhs)
@@ -523,8 +529,38 @@ void atom_print (const atom_t *atom, size_t depth, FILE *outf)
    }
 }
 
+int atom_fltint_cmp (const atom_t *lhs, const atom_t *rhs)
+{
+   if (lhs->type == atom_INT) {
+
+      int64_t ilhs = *(int64_t *)lhs->data;
+      double drhs = *(double *)rhs->data;
+
+      if (ilhs < drhs)  return -1;
+      if (ilhs > drhs)  return 1;
+      if (ilhs == drhs) return 0;
+
+   } else {
+
+      double dlhs = *(double *)lhs->data;
+      int64_t irhs = *(int64_t *)rhs->data;
+
+      if (dlhs < irhs)  return -1;
+      if (dlhs > irhs)  return 1;
+      if (dlhs == irhs) return 0;
+
+   }
+
+   return -1;
+}
+
 int atom_cmp (const atom_t *lhs, const atom_t *rhs)
 {
+   if ( (lhs->type == atom_INT && rhs->type == atom_FLOAT) ||
+        (lhs->type == atom_FLOAT && rhs->type ==atom_INT)) {
+      return atom_fltint_cmp (lhs, rhs);
+   }
+
    const atom_dispatch_t *func_lhs = atom_find_funcs (lhs->type),
                          *func_rhs = atom_find_funcs (rhs->type);
 

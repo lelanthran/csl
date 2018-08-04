@@ -133,7 +133,7 @@ static struct g_native_funcs_t {
    {  "<=",          builtins_LE          },
    {  ">",           builtins_GT          },
    {  ">=",          builtins_GE          },
-   {  "=",           builtins_GE          },
+   {  "=",           builtins_EQ          },
 
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },

@@ -326,7 +326,8 @@ atom_t *builtins_MULTIPLY (rt_t *rt, const atom_t *sym, const atom_t **args, siz
 }
 
 static atom_t *builtins_opcmp (rt_t *rt, const atom_t *sym,
-                               const atom_t **args, size_t nargs)
+                               const atom_t **args, size_t nargs,
+                               int r1, int r2)
 {
    sym = sym;
    rt = rt;
@@ -344,40 +345,43 @@ static atom_t *builtins_opcmp (rt_t *rt, const atom_t *sym,
    const atom_t *lhs = args[0];
    const atom_t *rhs = args[1];
 
-   size_t i=0;
-   int64_t result = true;
-   while (result==0 && lhs && rhs) {
+   size_t i=1;
+   int result = r1;
+   while ((result==r1 || result==r2) && lhs && rhs) {
       result = atom_cmp (lhs, rhs);
       lhs = rhs;
       rhs = args[++i];
    }
+
+   // We use 0 for false, and 1 for true
+   result = (result==r1 || result==r2) ? 1 : 0;
 
    return atom_int_new (result);
 }
 
 atom_t *builtins_LT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   return builtins_opcmp (rt, sym, args, nargs) < 0;
+   return builtins_opcmp (rt, sym, args, nargs, -1, -1);
 }
 
 atom_t *builtins_LE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   return builtins_opcmp (rt, sym, args, nargs) <= 0;
+   return builtins_opcmp (rt, sym, args, nargs, -1, 0);
 }
 
 atom_t *builtins_GT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   return builtins_opcmp (rt, sym, args, nargs) > 0;
+   return builtins_opcmp (rt, sym, args, nargs, 1, 1);
 }
 
 atom_t *builtins_GE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   return builtins_opcmp (rt, sym, args, nargs) >= 0;
+   return builtins_opcmp (rt, sym, args, nargs, 1, 0);
 }
 
 atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   return builtins_opcmp (rt, sym, args, nargs) == 0;
+   return builtins_opcmp (rt, sym, args, nargs, 0, 0);
 }
 
 
