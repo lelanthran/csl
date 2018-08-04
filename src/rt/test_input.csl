@@ -79,3 +79,15 @@
 (print (>=  7.2  7))
 (print (=   7.2  6))
 (print (=   7.2  7))
+
+(define 'v1 5)
+(define 'v2 5.1)
+
+(if (>= v1 v2)
+   '(print "TRUE")
+   '(print "FALSE"))
+
+(if (<= v1 v2)
+   '(print "TRUE")
+   '(print "FALSE"))
+

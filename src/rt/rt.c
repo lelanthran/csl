@@ -135,6 +135,8 @@ static struct g_native_funcs_t {
    {  ">=",          builtins_GE          },
    {  "=",           builtins_EQ          },
 
+   {  "if",          builtins_IF          },
+
    {  "+",           builtins_PLUS        },
    {  "-",           builtins_MINUS       },
    {  "/",           builtins_DIVIDE      },

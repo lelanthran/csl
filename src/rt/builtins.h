@@ -37,6 +37,8 @@ atom_t *builtins_GT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
 atom_t *builtins_GE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
+atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+
 #ifdef __cplusplus
 };
 #endif

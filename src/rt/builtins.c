@@ -385,3 +385,23 @@ atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
 }
 
 
+atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+
+   const atom_t *expr = args[0],
+                *iftrue = args[1],
+                *iffalse = args[2];
+
+   if (expr && ((expr->type==atom_INT && *(int64_t *)expr->data!=0) ||
+                (expr->type==atom_FLOAT && *(double *)expr->data!=0))) {
+      return rt_eval (rt, sym, iftrue);
+   } else {
+      return rt_eval (rt, sym, iffalse);
+   }
+
+   // Shut the compiler up, this never gets executed.
+   return NULL;
+}
+
