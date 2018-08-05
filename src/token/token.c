@@ -75,9 +75,9 @@ errorexit:
    return ret;
 }
 
-static token_t *get_next_token (FILE *inf, const char *fname,
-                                           size_t *line,
-                                           size_t *cpos)
+static token_t *fnext_token (FILE *inf, const char *fname,
+                                        size_t *line,
+                                        size_t *cpos)
 {
    bool error = true;
    token_t *ret = NULL;
@@ -85,7 +85,7 @@ static token_t *get_next_token (FILE *inf, const char *fname,
    int c = ' ';
 
    // Make this smaller if your program crashes while in this function.
-   char tmps[8192];
+   char tmps[MAX_TOKEN_LENGTH];
 
    size_t ll, cp;
 
@@ -217,11 +217,11 @@ token_t **token_read_file (const char *fname)
       goto errorexit;
    }
 
-   while ((tmpt = get_next_token (inf, fname, &line, &charpos))) {
+   while ((tmpt = fnext_token (inf, fname, &line, &charpos))) {
 
       if (strcmp (tmpt->string, "#load")==0) {
 
-         token_t *load_fname = get_next_token (inf, fname, &line, &charpos);
+         token_t *load_fname = fnext_token (inf, fname, &line, &charpos);
          char *tmpfname = strrchr (load_fname->string, '"');
          if (tmpfname) *tmpfname = 0;
          tmpfname = load_fname->string[0] == '"'
@@ -259,6 +259,157 @@ errorexit:
       }
       free (ret);
       ret = NULL;
+   }
+
+   return ret;
+}
+
+static token_t *snext_token (char **input, const char *fname,
+                             size_t *line, size_t *cpos)
+{
+   bool error = true;
+   token_t *ret = NULL;
+   bool in_str = false;
+   char *start = (*input);
+
+   char tmps[MAX_TOKEN_LENGTH];
+   size_t ll, cp;
+
+   ll = line ? *line : 0;
+   cp = cpos ? *cpos : 0;
+
+   memset (tmps, 0, sizeof tmps);
+
+   // Skip all whitespace
+   while (*start && isspace (*start))
+      start++;
+
+   if (!*start)
+      goto errorexit;
+
+   char *end = start;
+   for (size_t i=0; i<sizeof tmps; i++) {
+
+      if (!end || !*end)
+         break;
+
+      if (i >= (sizeof tmps - 1))
+         goto errorexit;
+
+      if (*end == ';') {
+         while (*end && *end != '\n')
+            end++;
+         ll++; cp = 1;
+         continue;
+      }
+
+      if (*end == '\n') {
+         ll++; cp = 1;
+      } else {
+         cp++;
+      }
+
+      if (in_str) {
+
+         if (*end == '"') {
+            in_str = false;
+            tmps[i] = '"';
+            end++;
+            break;
+         }
+
+         if (*end == '\\') {
+            end++;
+            cp++;
+         }
+
+         tmps[i] = *end;
+         end++;
+         continue;
+      }
+
+      if (*end == '"') {
+         in_str = true;
+         tmps[i] = '"';
+         end++;
+         continue;
+      }
+
+      if (is_operator (*end)) {
+         if (i) {
+         } else {
+            tmps[0] = *end;
+            end++;
+         }
+         break;
+      }
+
+      if (isspace (*end))
+         break;
+
+      tmps[i] = *end;
+      end++;
+   }
+
+   if (in_str) {
+      XERROR ("End of input while reading string [%s]\n", tmps);
+      goto errorexit;
+   }
+
+   if (!(ret = token_new (tmps, fname, (*line), (*cpos))))
+      goto errorexit;
+
+   error = false;
+errorexit:
+
+   if (error) {
+      token_del (ret);
+      ret = NULL;
+   }
+
+   if (line) (*line) = ll;
+   if (cpos) (*cpos) = cp;
+
+   (*input) = end;
+
+   return ret;
+
+}
+
+token_t **token_read_string (char **input, const char *fname)
+{
+   token_t **ret = NULL;
+   token_t *token = NULL;
+
+   if (!(ret = ll_new ()))
+      return NULL;
+
+   size_t line = 0, charpos = 0;
+
+   while ((token = snext_token (input, fname, &line, &charpos))!=NULL) {
+
+      if (strcmp (token->string, "#load")==0) {
+
+         token_t *load_fname = snext_token (input, fname, &line, &charpos);
+
+         char *tmpfname = strrchr (load_fname->string, '"');
+         if (tmpfname) *tmpfname = 0;
+         tmpfname = load_fname->string[0] == '"'
+                     ? &load_fname->string[1]
+                     : load_fname->string;
+
+         token_t **subv = token_read_file (tmpfname);
+
+         token_del (load_fname);
+
+         for (size_t i=0; subv && subv[i]; i++) {
+            ll_ins_tail ((void ***)&ret, subv[i]);
+         }
+         free (subv);
+         token_del (token);
+         continue;
+      }
+      ll_ins_tail ((void ***)&ret, token);
    }
 
    return ret;

@@ -5,6 +5,7 @@
 #include "token/token.h"
 
 #include "xerror/xerror.h"
+#include "xstring/xstring.h"
 
 #define TESTFILE     ("token/test_input.csl")
 
@@ -12,7 +13,15 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
-   token_t **tokens = token_read_file (TESTFILE);
+   char *input = xstr_readfile (TESTFILE);
+   if (!input) {
+      XERROR ("Unable to read file [%s]\n", TESTFILE);
+      return EXIT_FAILURE;
+   }
+
+   char *tmp = input;
+   token_t **tokens = token_read_string (&tmp, TESTFILE);
+
    if (!tokens) {
       XERROR ("Unable to read tokens from [%s]\n", TESTFILE);
       goto errorexit;
@@ -31,6 +40,8 @@ int main (void)
    ret = EXIT_SUCCESS;
 
 errorexit:
+
+   free (input);
 
    xerror_set_logfile (NULL);
    return ret;
