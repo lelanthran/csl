@@ -64,7 +64,13 @@ void *ll_index (void **ll, size_t i)
    if (!ll)
       return NULL;
 
-   return ll[i];
+   for (size_t count = 0; ll[count]; count++) {
+      if (count==i) {
+         return ll[i];
+      }
+   }
+
+   return NULL;
 }
 
 void ll_iterate (void **ll, void (*fptr) (void *))
