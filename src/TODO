@@ -42,7 +42,7 @@
 7. Tokeniser should be able to tokenise input in a buffer. Parser must
    signal errors if it runs out of tokens (unterminated list).
 
-8. Tokeniser needs to ignore comments.
+-- 8. Tokeniser needs to ignore comments.
 
 9. Need to add type promotion/coercion rules when comparing and assign to
    atoms.
