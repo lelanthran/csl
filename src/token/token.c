@@ -75,191 +75,23 @@ errorexit:
    return ret;
 }
 
-static token_t *fnext_token (FILE *inf, const char *fname,
-                                        size_t *line,
-                                        size_t *cpos)
-{
-   bool error = true;
-   token_t *ret = NULL;
-   bool in_str = false;
-   int c = ' ';
-
-   // Make this smaller if your program crashes while in this function.
-   char tmps[MAX_TOKEN_LENGTH];
-
-   size_t ll, cp;
-
-   ll = line ? *line : 0;
-   cp = cpos ? *cpos : 0;
-
-   memset (tmps, 0, sizeof tmps);
-
-   // Skip all whitespace
-   while (!feof (inf) && !ferror (inf)) {
-      c = fgetc (inf);
-      if (!(isspace (c)))
-         break;
-   }
-
-   if (isspace (c))
-      goto errorexit;
-
-   ungetc (c, inf);
-
-   for (size_t i=0; i<sizeof tmps; i++) {
-
-      if (ferror (inf) || feof (inf))
-         break;
-
-      if (i >= (sizeof tmps - 1))
-         goto errorexit;
-
-      c = fgetc (inf);
-
-      if (c == ';') {
-         c = fgetc (inf);
-         while (!ferror (inf) && !feof (inf)) {
-            if (c == '\n') {
-               break;
-            }
-            c = fgetc (inf);
-         }
-
-         ll++; cp = 1;
-         continue;
-      }
-
-      if (c == '\n') {
-         ll++; cp = 1;
-      } else {
-         cp++;
-      }
-
-      if (c==EOF)
-         break;
-
-      if (in_str) {
-
-         if (c == '"') {
-            in_str = false;
-            tmps[i] = '"';
-            break;
-         }
-
-         if (c == '\\') {
-            c = fgetc (inf);
-            cp++;
-         }
-
-         tmps[i] = (char)c;
-         continue;
-      }
-
-      if (c == '"') {
-         in_str = true;
-         tmps[i] = '"';
-         continue;
-      }
-
-      if (is_operator (c)) {
-         if (i) {
-            ungetc (c, inf);
-            cp--;
-         } else {
-            tmps[0] = (char)c;
-         }
-         break;
-      }
-
-      if (isspace (c))
-         break;
-
-      tmps[i] = (char)c;
-   }
-
-   if (in_str) {
-      XERROR ("End of input while reading string [%s]\n", tmps);
-      goto errorexit;
-   }
-
-   if (!(ret = token_new (tmps, fname, (*line), (*cpos))))
-      goto errorexit;
-
-   error = false;
-errorexit:
-
-   if (error) {
-      token_del (ret);
-      ret = NULL;
-   }
-
-   if (line) (*line) = ll;
-   if (cpos) (*cpos) = cp;
-
-   return ret;
-}
-
 token_t **token_read_file (const char *fname)
 {
-   bool error = true;
-   FILE *inf = NULL;
+   char *input = NULL;
    token_t **ret = NULL;
-   void **tmpv = NULL;
-   token_t *tmpt = NULL;
 
    size_t line = 0, charpos = 0;
 
-   if (!(tmpv = ll_new ()))
-      goto errorexit;
-
-   if (!(inf = fopen (fname, "r"))) {
-      XERROR ("Unable to open [%s]: %m\n", fname);
-      goto errorexit;
+   if (!(input = xstr_readfile (fname))) {
+      XERROR ("Unable to read [%s]: %m\n", fname);
+      return NULL;
    }
 
-   while ((tmpt = fnext_token (inf, fname, &line, &charpos))) {
+   char *tmp = input;
 
-      if (strcmp (tmpt->string, "#load")==0) {
+   ret = token_read_string (&tmp, fname);
 
-         token_t *load_fname = fnext_token (inf, fname, &line, &charpos);
-         char *tmpfname = strrchr (load_fname->string, '"');
-         if (tmpfname) *tmpfname = 0;
-         tmpfname = load_fname->string[0] == '"'
-                     ? &load_fname->string[1]
-                     : load_fname->string;
-
-         token_t **subv = token_read_file (tmpfname);
-
-         token_del (load_fname);
-
-         for (size_t i=0; subv && subv[i]; i++) {
-            ll_ins_tail (&tmpv, subv[i]);
-         }
-         free (subv);
-         token_del (tmpt);
-         continue;
-      }
-      ll_ins_tail (&tmpv, tmpt);
-   }
-
-   ret = (token_t **)ll_copy (tmpv, 0, (size_t)-1);
-
-   error = false;
-
-errorexit:
-
-   ll_del (tmpv);
-
-   if (inf)
-      fclose (inf);
-
-   if (error) {
-      for (size_t i=0; ret && ret[i]; i++) {
-         token_del (ret[i]);
-      }
-      free (ret);
-      ret = NULL;
-   }
+   free (input);
 
    return ret;
 }
@@ -300,7 +132,11 @@ static token_t *snext_token (char **input, const char *fname,
          while (*end && *end != '\n')
             end++;
          ll++; cp = 1;
-         continue;
+         (*input) = end;
+         ret = snext_token (input, fname, &ll, &cp);
+         if (line) *line = ll;
+         if (cpos) *cpos = cp;
+         return ret;
       }
 
       if (*end == '\n') {

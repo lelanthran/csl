@@ -2,5 +2,8 @@
 
 #load "./token/test2_input.csl"
 
-(one (two '(three four five)
-   "six seven" eight:nine ten=11))
+; Testing comments
+(one (two '(three four five)           ; Everywhere
+   "six seven" eight:nine ten=11))     ; Works well
+
+; End on a comment
