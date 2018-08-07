@@ -113,8 +113,8 @@ static void a_del_nonlist (atom_t *atom)
 
 static void print_depth (size_t depth, FILE *outf)
 {
-   for (size_t i=0; i<(depth * 3); i++)
-      fprintf (outf, " ");
+   // for (size_t i=0; i<(depth * 3); i++)
+      // fprintf (outf, " ");
 }
 
 static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
@@ -122,54 +122,55 @@ static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
    void **children = atom->data;
    size_t nchildren = ll_length (children);
 
-   print_depth (depth, outf);
-   fprintf (outf, "list:\n");
+   // print_depth (depth, outf);
+   fprintf (outf, "(");
    for (size_t i=0; i<nchildren; i++) {
       atom_t *child = ll_index (children, i);
       atom_print (child, depth + 1, outf);
    }
+   fprintf (outf, ")\n");
 }
 
 static void a_pr_quote (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->quot[%s]\n", (char *)atom->data);
+   fprintf (outf, " quot[%s]", (char *)atom->data);
 }
 
 static void a_pr_string (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->str[%s]\n", (char *)atom->data);
+   fprintf (outf, " str[%s]", (char *)atom->data);
 }
 
 static void a_pr_symbol (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->sym[%s]\n", (char *)atom->data);
+   fprintf (outf, " sym[%s]", (char *)atom->data);
 }
 
 static void a_pr_int (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->int[%" PRIi64 "]\n", *(int64_t *)atom->data);
+   fprintf (outf, " int[%" PRIi64 "]", *(int64_t *)atom->data);
 }
 
 static void a_pr_float (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->flt[%f]\n", *(double *)atom->data);
+   fprintf (outf, " flt[%f]", *(double *)atom->data);
 }
 
 static void a_pr_ffi (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->ffi[%p]\n", atom->data);
+   fprintf (outf, " ffi[%p]", atom->data);
 }
 
 static void a_pr_native (const atom_t *atom, size_t depth, FILE *outf)
 {
    print_depth (depth, outf);
-   fprintf (outf, "--->native[%p]\n", atom->data);
+   fprintf (outf, " native[%p]", atom->data);
 }
 
 static atom_t *a_dup_list (atom_t *dst, const atom_t *src)

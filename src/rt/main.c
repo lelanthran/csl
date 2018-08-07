@@ -44,17 +44,20 @@ int main (void)
          goto errorexit;
       }
 
-      printf ("Printing atom:\n");
+      printf ("Evaluating: ");
       atom_print (atom, 0, stdout);
+      printf ("\n");
 
+      printf ("------------");
       result = rt_eval (rt, NULL, atom);
+      printf ("------------\n");
 
       if (!result) {
          XERROR ("Eval error near [%s]\n", token_string (tokens[index]));
          atom_del (atom);
          goto errorexit;
       }
-      printf ("RESULT:\n");
+      printf ("RESULT:");
       atom_print (result, 0, stdout);
       printf (":END-RESULT\n");
       atom_del (result);
