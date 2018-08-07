@@ -124,6 +124,9 @@ static struct g_native_funcs_t {
    {  "bi_let",         builtins_LET         },
    {  "bi_defun",       builtins_DEFUN       },
    {  "bi_funcall",     builtins_FUNCALL     },
+   {  "bi_trap_set",    builtins_TRAP_SET    },
+   {  "bi_trap_clear",  builtins_TRAP_CLEAR  },
+   {  "bi_trap",        builtins_TRAP        },
 
    {  "<",              builtins_LT          },
    {  "<=",             builtins_LE          },
@@ -149,7 +152,7 @@ rt_t *rt_new (void)
 
    ret->symbols = atom_list_new ();
    ret->stack = atom_list_new ();
-   ret->roots = atom_list_new ();
+   ret->traps = atom_list_new ();
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
       atom_t *sym = atom_new (atom_SYMBOL, g_native_funcs[i].name);
@@ -180,7 +183,7 @@ void rt_del (rt_t *rt)
 
    atom_del (rt->symbols);
    atom_del (rt->stack);
-   atom_del (rt->roots);
+   atom_del (rt->traps);
 
    free (rt);
 }
@@ -213,20 +216,17 @@ static atom_t *make_stack_entry (const atom_t *sym, const atom_t **args,
    atom_t *ret = atom_list_new ();
 
    if (!ret) {
-      printf ("..........................................\n");
       goto errorexit;
    }
 
    atom_t *tmp = sym ? sym : symtable;
 
    if (!atom_list_ins_tail (ret, atom_dup (tmp))) {
-      printf ("|||||||||||||||||||||||||||||||||||||||||||||||||||||\n");
       goto errorexit;
    }
 
    for (size_t i=0; args[i] && i<nargs; i++) {
       if (!atom_list_ins_tail (ret, atom_dup (args[i]))) {
-         printf ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
          goto errorexit;
       }
    }
@@ -325,12 +325,10 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
 
    sinfo = make_stack_entry (sym, args, nargs);
    if (!sinfo) {
-      printf ("*********************************************\n");
       goto errorexit;
    }
 
    if (!atom_list_ins_tail (rt->stack, sinfo)) {
-      printf ("000000000000000000000000000000000000000000000000\n");
       goto errorexit;
    }
 

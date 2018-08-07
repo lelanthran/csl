@@ -5,6 +5,79 @@
 #include "ll/ll.h"
 
 
+atom_t *builtins_TRAP_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   sym = sym;
+   if (nargs != 2) {
+      fprintf (stderr, "--------------------------------------\n");
+      fprintf (stderr, "Too many arguments for TRAP_SET (found %zu). Possible "
+                       "unterminated list.\n", nargs);
+      for (size_t i=0; i<nargs; i++) {
+         fprintf (stderr, "element [%zu] = ", i);
+         atom_print (args[i], 0, stderr);
+      }
+      return NULL;
+   }
+
+   atom_t *existing = rt_symbol_remove (rt->traps, args[0]);
+   atom_del (existing);
+
+   return atom_dup (rt_symbol_add (rt->traps, args[0], args[1]));
+}
+
+atom_t *builtins_TRAP_CLEAR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   sym = sym;
+   atom_t *ret = NULL;
+   for (size_t i=0; i<nargs; i++) {
+      atom_del (ret);
+      ret = rt_symbol_remove (rt->symbols, args[i]);
+   }
+
+   return ret;
+}
+
+atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   sym = sym;
+
+   atom_t *ret = NULL;
+   atom_t *ZERO = atom_new (atom_INT, "0");
+   if (!ZERO) {
+      return NULL;
+   }
+
+   bool repeat = true;
+
+   while (repeat) {
+      const atom_t *trap = rt_symbol_find (rt->traps, args[0]);
+      fprintf (stderr, "Received trap [%s], executing handler\n",
+                        atom_to_string (atom_list_index (trap, 0)));
+
+      ret = rt_eval (rt, sym, atom_list_index (trap, 1));
+
+      if (ret && atom_cmp (ret, ZERO)==0) {
+         repeat = true;
+      } else {
+         repeat = false;
+      }
+   }
+
+   atom_del (ZERO);
+   return ret;
+}
+
+atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   fprintf (stderr, "Default trap handler:\n");
+   for (size_t i=0; args[i]; i++) {
+      atom_print (args[i], 0, stderr);
+   }
+   return atom_new (atom_INT, "0");
+}
+
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    bool error = true;

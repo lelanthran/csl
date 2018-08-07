@@ -11,6 +11,11 @@ typedef atom_t *(rt_builtins_fptr_t) (rt_t *rt, const atom_t *, const atom_t **,
 extern "C" {
 #endif
 
+atom_t *builtins_TRAP_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_TRAP_CLEAR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 

@@ -100,3 +100,8 @@
 
 (fact 5) ; Call the function
 
+(bi_trap_set 'TRAP_TEST '(fact 4))
+(bi_trap_set 'TRAP_TEST '(bi_print "the replacement trap handler"))
+
+(bi_trap 'TRAP_TEST)
+

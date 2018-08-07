@@ -10,7 +10,7 @@ typedef struct rt_t rt_t;
 struct rt_t {
    atom_t *symbols;
    atom_t *stack;
-   atom_t *roots;
+   atom_t *traps;
 
    bool flags; // Reserved for internal use
 };
