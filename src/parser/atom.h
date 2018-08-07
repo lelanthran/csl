@@ -60,6 +60,8 @@ extern "C" {
    atom_t *atom_list_remove (atom_t *atom, size_t index);
    atom_t *atom_list_ins_tail (atom_t *atom, void *el);
    atom_t *atom_list_ins_head (atom_t *atom, void *el);
+   atom_t *atom_list_remove_tail (atom_t *atom);
+   atom_t *atom_list_remove_head (atom_t *atom);
 
    atom_t *atom_string_new (const char *s);
    atom_t *atom_symbol_new (const char *s);

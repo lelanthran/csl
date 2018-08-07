@@ -204,6 +204,47 @@ const atom_t *rt_eval_symbol (rt_t *rt, const atom_t *sym, const atom_t *atom)
    return atom_list_index (entry, 1);
 }
 
+static atom_t *make_stack_entry (const atom_t *sym, const atom_t **args,
+                                                    size_t nargs)
+{
+   bool error = true;
+
+   atom_t *symtable = atom_list_new ();
+   atom_t *ret = atom_list_new ();
+
+   if (!ret) {
+      printf ("..........................................\n");
+      goto errorexit;
+   }
+
+   atom_t *tmp = sym ? sym : symtable;
+
+   if (!atom_list_ins_tail (ret, atom_dup (tmp))) {
+      printf ("|||||||||||||||||||||||||||||||||||||||||||||||||||||\n");
+      goto errorexit;
+   }
+
+   for (size_t i=0; args[i] && i<nargs; i++) {
+      if (!atom_list_ins_tail (ret, atom_dup (args[i]))) {
+         printf ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+         goto errorexit;
+      }
+   }
+
+   error = false;
+
+errorexit:
+
+   atom_del (symtable);
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
 static atom_t *rt_funcall_native (rt_t *rt, const atom_t *sym,
                                   const atom_t **args, size_t nargs)
 {
@@ -240,6 +281,7 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
    atom_t *ret = NULL;
    atom_t *func = NULL;
+   atom_t *sinfo = NULL;
 
    void **args = NULL;
    size_t nargs = 0;
@@ -281,6 +323,17 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    if (!func)
       goto errorexit;
 
+   sinfo = make_stack_entry (sym, args, nargs);
+   if (!sinfo) {
+      printf ("*********************************************\n");
+      goto errorexit;
+   }
+
+   if (!atom_list_ins_tail (rt->stack, sinfo)) {
+      printf ("000000000000000000000000000000000000000000000000\n");
+      goto errorexit;
+   }
+
    switch (func->type) {
       case atom_FFI:
          // TODO: Implement FFI
@@ -299,6 +352,7 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
          break;
    }
 
+   atom_list_remove_tail (rt->stack);
 
    if (!ret) {
       ret = atom_list_new ();
@@ -308,6 +362,9 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    }
 
 errorexit:
+
+   atom_del (sinfo);
+
    ll_iterate (args, (void (*) (void *))atom_del);
    ll_del (args);
 
@@ -366,6 +423,7 @@ void rt_print (rt_t *rt, FILE *outf)
    }
 
    atom_print (rt->symbols, 0, outf);
+   atom_print (rt->stack, 0, outf);
 
 }
 

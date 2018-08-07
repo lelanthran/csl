@@ -133,8 +133,8 @@ void *ll_remove_tail (void ***ll)
    if(!ll || !(*ll) || !(*ll)[0])
       return NULL;
 
-   for (size_t i=1; (*ll)[i]; i++) {
-      if ((*ll)[i-1]==0) {
+   for (size_t i=1; (*ll)[i-1]; i++) {
+      if ((*ll)[i]==0) {
          void *ret = (*ll)[i-1];
          (*ll)[i-1] = 0;
          return ret;

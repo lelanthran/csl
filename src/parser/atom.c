@@ -618,6 +618,16 @@ atom_t *atom_list_ins_head (atom_t *atom, void *el)
    return ll_ins_head ((void ***)&atom->data, el);
 }
 
+atom_t *atom_list_remove_tail (atom_t *atom)
+{
+   return ll_remove_tail ((void ***)&atom->data);
+}
+
+atom_t *atom_list_remove_head (atom_t *atom)
+{
+   return ll_remove_head ((void ***)&atom->data);
+}
+
 atom_t *atom_string_new (const char *s)
 {
    return atom_new (atom_STRING, s);
