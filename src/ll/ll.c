@@ -128,6 +128,29 @@ void *ll_ins_head (void ***ll, void *el)
    return (*ll)[nitems];
 }
 
+void *ll_remove_tail (void ***ll)
+{
+   if(!ll || !(*ll) || !(*ll)[0])
+      return NULL;
+
+   for (size_t i=1; (*ll)[i]; i++) {
+      if ((*ll)[i-1]==0) {
+         void *ret = (*ll)[i-1];
+         (*ll)[i-1] = 0;
+         return ret;
+      }
+   }
+
+   return NULL;
+
+}
+
+void *ll_remove_head (void ***ll)
+{
+   return ll_remove (ll, 0);
+}
+
+
 void *ll_remove (void ***ll, size_t index)
 {
    if (!ll || !*ll)
