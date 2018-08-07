@@ -2,6 +2,7 @@
 
 #include "parser/atom.h"
 #include "rt/builtins.h"
+#include "rt/rt.h"
 #include "ll/ll.h"
 
 
@@ -40,6 +41,7 @@ atom_t *builtins_TRAP_CLEAR (rt_t *rt, const atom_t *sym, const atom_t **args, s
 atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
+   nargs = nargs;
 
    atom_t *ret = NULL;
    atom_t *ZERO = atom_new (atom_INT, "0");
@@ -51,10 +53,23 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
 
    while (repeat) {
       const atom_t *trap = rt_symbol_find (rt->traps, args[0]);
+      if (!trap)
+         break;
+
       fprintf (stderr, "Received trap [%s], executing handler\n",
                         atom_to_string (atom_list_index (trap, 0)));
 
-      ret = rt_eval (rt, sym, atom_list_index (trap, 1));
+      if (atom_list_index (trap, 1)->type == atom_NATIVE) {
+         atom_t *tmp = atom_list_new ();
+         atom_list_ins_tail (tmp, atom_dup (atom_list_index (trap, 1)));
+         for (size_t i=1; args[i]; i++) {
+            atom_list_ins_tail (tmp, atom_dup (args[i]));
+         }
+         ret = rt_eval (rt, sym, tmp);
+         atom_del (tmp);
+      } else {
+         ret = rt_eval (rt, sym, atom_list_index (trap, 1));
+      }
 
       if (ret && atom_cmp (ret, ZERO)==0) {
          repeat = true;
@@ -71,11 +86,13 @@ atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, siz
 {
    rt = rt;
    sym = sym;
+   nargs = nargs;
+
    fprintf (stderr, "Default trap handler:\n");
    for (size_t i=0; args[i]; i++) {
       atom_print (args[i], 0, stderr);
    }
-   return atom_new (atom_INT, "0");
+   return atom_new (atom_INT, "1");
 }
 
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
@@ -118,7 +135,7 @@ atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size
       return NULL;
 
    for (size_t i=1; args[i]; i++) {
-      if (!(atom_list_ins_tail (args[0], atom_dup (args[i]))))
+      if (!(atom_list_ins_tail ((atom_t *)args[0], atom_dup (args[i]))))
          goto errorexit;
    }
 
@@ -126,7 +143,7 @@ atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size
 
 errorexit:
 
-   return error ? NULL : args[0];
+   return error ? NULL : (atom_t *)args[0];
 }
 
 atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
@@ -300,12 +317,6 @@ atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size
       }
       return NULL;
    }
-
-   printf ("+++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-   atom_print (args[0], 5, stdout);
-   printf ("*****************************************************\n");
-   atom_print (args[1], 5, stdout);
-   printf (".....................................................\n");
 
    const atom_t *fargs = args[0],
                 *fparam = atom_list_index (args[1], 0),
@@ -488,6 +499,7 @@ atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
 {
    rt = rt;
    sym = sym;
+   nargs = nargs;
 
    const atom_t *expr = args[0],
                 *iftrue = args[1],

@@ -123,7 +123,7 @@ static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
    size_t nchildren = ll_length (children);
 
    // print_depth (depth, outf);
-   fprintf (outf, "(");
+   fprintf (outf, " (");
    for (size_t i=0; i<nchildren; i++) {
       atom_t *child = ll_index (children, i);
       atom_print (child, depth + 1, outf);

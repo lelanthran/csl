@@ -105,3 +105,16 @@
 
 (bi_trap 'TRAP_TEST)
 
+(bi_defun 'fact '(x)
+   '(if (= x 0)
+      '(bi_trap 'TRAP_TEST)
+      '(* x (fact (- x 1)))))
+
+(fact 5) ; Call the function
+
+(bi_trap_clear 'TRAP_TEST)
+
+(fact 5) ; Call the function
+
+(bi_trap 'TRAP_NOPARAM)
+

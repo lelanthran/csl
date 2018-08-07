@@ -109,6 +109,37 @@ atom_t *rt_symbol_remove (atom_t *symbols, const atom_t *name)
    return NULL;
 }
 
+static const atom_t *add_native_func (atom_t *symbols,
+                                      const char *name,
+                                      rt_builtins_fptr_t *fptr)
+{
+   atom_t *sym = NULL;
+   atom_t *value = NULL;
+   const atom_t *ret = NULL;
+
+   sym = atom_new (atom_SYMBOL, name);
+   value = rt_atom_native (fptr);
+
+   ret = rt_symbol_add (symbols, sym, value);
+
+   atom_del (sym);
+   atom_del (value);
+
+   return ret;
+}
+
+const atom_t *rt_add_native_func (rt_t *rt, const char *name,
+                                            rt_builtins_fptr_t *fptr)
+{
+   return add_native_func (rt->symbols, name, fptr);
+}
+
+const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
+                                            rt_builtins_fptr_t *fptr)
+{
+   return add_native_func (rt->traps, name, fptr);
+}
+
 static struct g_native_funcs_t {
    const char *name;
    rt_builtins_fptr_t *fptr;
@@ -142,6 +173,44 @@ static struct g_native_funcs_t {
    {  "*",              builtins_MULTIPLY    },
 };
 
+static const char *g_default_traps[] = {
+   // First, we try to handle all the system signals. If these are set to
+   // builtins_TRAP_DFL then we don't try to catch them
+   "SIGHUP",
+   "SIGINT",
+   "SIGQUIT",
+   "SIGILL",
+   "SIGABRT",
+   "SIGFPE",
+   "SIGKILL",
+   "SIGSEGV",
+   "SIGPIPE",
+   "SIGALRM",
+   "SIGTERM",
+   "SIGUSR1",
+   "SIGUSR2",
+   "SIGCHLD",
+   "SIGCONT",
+   "SIGSTOP",
+   "SIGTSTP",
+   "SIGTTIN",
+   "SIGTTOU",
+   "SIGBUS",
+   "SIGPOLL",
+   "SIGPROF",
+   "SIGSYS",
+   "SIGTRAP",
+   "SIGURG",
+   "SIGVTALRM",
+   "SIGXCPU",
+   "SIGXFSZ",
+
+   // All of these traps we catch, these are all specific to oiur running
+   // program.
+   "TRAP_NOPARAM",
+   "TRAP_EVAL_FAIL",
+};
+
 rt_t *rt_new (void)
 {
    bool error = true;
@@ -155,13 +224,16 @@ rt_t *rt_new (void)
    ret->traps = atom_list_new ();
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
-      atom_t *sym = atom_new (atom_SYMBOL, g_native_funcs[i].name);
-      atom_t *value = rt_atom_native (g_native_funcs[i].fptr);
-      const atom_t *tmp = rt_symbol_add (ret->symbols, sym, value);
-      if (!tmp)
+      if (!rt_add_native_func (ret, g_native_funcs[i].name,
+                                    g_native_funcs[i].fptr)) {
          goto errorexit;
-      atom_del (sym);
-      atom_del (value);
+      }
+   }
+
+   for (size_t i=0; i<sizeof g_default_traps/sizeof g_default_traps[0]; i++) {
+      if (!rt_set_native_trap (ret, g_default_traps[i], builtins_TRAP_DFL)) {
+         goto errorexit;
+      }
    }
 
    error = false;
@@ -219,7 +291,7 @@ static atom_t *make_stack_entry (const atom_t *sym, const atom_t **args,
       goto errorexit;
    }
 
-   atom_t *tmp = sym ? sym : symtable;
+   const atom_t *tmp = sym ? sym : symtable;
 
    if (!atom_list_ins_tail (ret, atom_dup (tmp))) {
       goto errorexit;
@@ -323,7 +395,7 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    if (!func)
       goto errorexit;
 
-   sinfo = make_stack_entry (sym, args, nargs);
+   sinfo = make_stack_entry (sym, (const atom_t **)args, nargs);
    if (!sinfo) {
       goto errorexit;
    }
@@ -420,8 +492,12 @@ void rt_print (rt_t *rt, FILE *outf)
       return;
    }
 
+   fprintf (outf, "SYMBOL TABLE\n");
    atom_print (rt->symbols, 0, outf);
+   fprintf (outf, "CALL STACK\n");
    atom_print (rt->stack, 0, outf);
+   fprintf (outf, "TRAP HANDLERS\n");
+   atom_print (rt->traps, 0, outf);
 
 }
 
