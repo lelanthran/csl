@@ -88,10 +88,14 @@ atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, siz
    sym = sym;
    nargs = nargs;
 
-   fprintf (stderr, "Default trap handler:\n");
+   fprintf (stderr, "Default trap handler in '");
    for (size_t i=0; args[i]; i++) {
       atom_print (args[i], 0, stderr);
    }
+   fprintf (stderr, "'\n");
+   fprintf (stderr, "\nLOCAL SYMBOL TABLE\n");
+   atom_print (sym, 0, stderr);
+   rt_print (rt, stderr);
    return atom_new (atom_INT, "1");
 }
 

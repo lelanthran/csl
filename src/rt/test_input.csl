@@ -109,12 +109,12 @@
 
 (bi_defun 'fact '(x)
    '(if (= x 0)
-      '(bi_trap 'TRAP_TEST)
+      '(bi_trap 'TRAP_NOPARAM)
       '(* x (fact (- x 1)))))
 
 (fact 4) ; Call the function
 
-(bi_trap_clear 'TRAP_TEST)
+; (bi_trap_clear 'TRAP_TEST)
 
 (fact 3) ; Call the function
 

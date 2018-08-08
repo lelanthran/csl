@@ -122,7 +122,7 @@ static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
    void **children = atom->data;
    size_t nchildren = ll_length (children);
 
-   fprintf (outf, "\n");
+   if (depth) fprintf (outf, "\n");
    print_depth (depth, outf);
    fprintf (outf, "(");
    for (size_t i=0; i<nchildren; i++) {

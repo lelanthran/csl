@@ -395,7 +395,8 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    if (!func)
       goto errorexit;
 
-   sinfo = make_stack_entry (sym, (const atom_t **)args, nargs);
+   sinfo = make_stack_entry (atom_list_index (atom, 0),
+                            (const atom_t **)args, nargs);
    if (!sinfo) {
       goto errorexit;
    }
@@ -482,6 +483,16 @@ errorexit:
    return tmp;
 }
 
+static void print_numbered_list (atom_t *list, FILE *outf)
+{
+   size_t len = atom_list_length (list);
+   for (size_t i=0; i<len; i++) {
+      fprintf (outf, "[%zu]: ", i);
+      atom_print (atom_list_index (list, i), 0, outf);
+      fprintf (outf, "\n");
+   }
+}
+
 void rt_print (rt_t *rt, FILE *outf)
 {
    if (!outf)
@@ -492,12 +503,21 @@ void rt_print (rt_t *rt, FILE *outf)
       return;
    }
 
-   fprintf (outf, "SYMBOL TABLE\n");
+   /*
+   fprintf (outf, "\nSYMBOL TABLE\n");
    atom_print (rt->symbols, 0, outf);
-   fprintf (outf, "CALL STACK\n");
+   fprintf (outf, "\nCALL STACK\n");
    atom_print (rt->stack, 0, outf);
-   fprintf (outf, "TRAP HANDLERS\n");
+   fprintf (outf, "\nTRAP HANDLERS\n");
    atom_print (rt->traps, 0, outf);
-
+   fprintf (outf, "\n");
+   */
+   fprintf (outf, "\nSYMBOL TABLE\n");
+   print_numbered_list (rt->symbols, outf);
+   fprintf (outf, "\nCALL STACK\n");
+   print_numbered_list (rt->stack, outf);
+   fprintf (outf, "\nTRAP HANDLERS\n");
+   print_numbered_list (rt->traps, outf);
+   fprintf (outf, "\n");
 }
 
