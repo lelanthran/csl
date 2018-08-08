@@ -1,7 +1,7 @@
 # C Scripting Language
-## What is *CSL*?
-*CSL* is a simple lisp-like language for scripting high-level logic
-and data structures in a way that interfaces easily to the *C* programming
+## What is `CSL`?
+`CSL` is a simple lisp-like language for scripting high-level logic
+and data structures in a way that interfaces easily to the `C` programming
 language.
 
 You don't want to use this language - it's a work-in-progress and not
@@ -9,76 +9,76 @@ yet fit to use. You are encouraged to use one of  the alternatives listed
 below.
 
 ## Alternatives
-If you really were looking for a scripting language for your *C* programs
-then you should avoid *CSL* and use one of the existing scripting
+If you really were looking for a scripting language for your `C` programs
+then you should avoid `CSL` and use one of the existing scripting
 languages. I provide a short list below - you can easily find out more
 about each alternative with a brief search on the internet:
 
-1. *Python* is pretty popular as a scripting language, although
-   interfacing *Python* to *C* involves writing wrappers around your *C*
-   functions if you want to call them from *Python* and, conversely, writing
-   some wrappers for your *Python* code if you want to call it from *C*.
-   *Python* is strongly typed in a useless sort of way because you only
+1. `Python` is pretty popular as a scripting language, although
+   interfacing `Python` to `C` involves writing wrappers around your `C`
+   functions if you want to call them from `Python` and, conversely, writing
+   some wrappers for your `Python` code if you want to call it from `C`.
+   `Python` is strongly typed in a useless sort of way because you only
    discover type errors at runtime, which defeats the purpose of static
    typing in the first place.
 
-   More recently, a little progress has been made in the *Python* community
+   More recently, a little progress has been made in the `Python` community
    towards performing type-checking prior to runtime.
 
-2. *Lua* has enjoyed considerable success as a scripting language for *C*
-   and *C++*. Interfacing between *Lua* and *C* is pretty complicated and
-   apparently changes very often when *Lua* changes a major version
-   number. *Lua* is more suited to running entire scripts from *C* rather
+2. `Lua` has enjoyed considerable success as a scripting language for `C`
+   and `C++`. Interfacing between `Lua` and `C` is pretty complicated and
+   apparently changes very often when `Lua` changes a major version
+   number. `Lua` is more suited to running entire scripts from `C` rather
    than running individual functions (although it can do both, the latter
    is more involved). Since that is exactly what most programmers want
    from a scripting language this is no big deal.
 
-   *Lua* has found quite a successful niche as the logic and event
+   `Lua` has found quite a successful niche as the logic and event
    scripting engine for games. Make of that what you will.
 
-3. *Tcl* is one of the older scripting languages. While it is pretty
+3. `Tcl` is one of the older scripting languages. While it is pretty
    simple to start with and understand it is fairly limited due to its
    type system which uses all data as either strings or lists of strings.
-   Nevertheless, it interfaces with *C* extremely well and it does by
-   default also come with the *Tk* Graphical User Interface library.
+   Nevertheless, it interfaces with `C` extremely well and it does by
+   default also come with the `Tk` Graphical User Interface library.
 
-   *Tcl/Tk* has been used with moderate success in many embedded environments,
+   `Tcl/Tk` has been used with moderate success in many embedded environments,
    although its usage has dropped in the last decade.
 
 4. If you are looking specifically for a lisp-ish language then you can't
-   go wrong with either *ECL* (Embeddable Common Lisp) or *GCL* (Gnu
-   Common Lisp). They both have exceptional *C* interface capabilities due
-   to the way they work. *ECL* and *GCL* both *compile* their input *Lisp*
+   go wrong with either `ECL` (Embeddable Common Lisp) or `GCL` (Gnu
+   Common Lisp). They both have exceptional `C` interface capabilities due
+   to the way they work. `ECL` and `GCL` both `compile` their input `Lisp`
    source into ANSI-C, which is then passed off to gcc for compilation
    into native code.
 
    This has superb performance benefits as the scripted logic is then run
-   as native code. Another side-effect of compiling to *C* is that the
-   script code can contain *C* snippets directly in the source of the
-   script; this makes interfacing to *C* a walk-in-the-park when compared
+   as native code. Another side-effect of compiling to `C` is that the
+   script code can contain `C` snippets directly in the source of the
+   script; this makes interfacing to `C` a walk-in-the-park when compared
    to the interfacing requirements of the other scripting languages.
 
    The downside is that you'll have to learn lisp.
 
-5. *CINT* is a *C* interpreter. This means that your scripting language
-   is the same language as your host language (either *C* or *C++*).
+5. `CINT` is a `C` interpreter. This means that your scripting language
+   is the same language as your host language (either `C` or `C++`).
    While I haven't personally used it, reports of its conformance level
    with pre-C99 is quite good. It apparently also makes interfacing with
-   *C* a breeze.
+   `C` a breeze.
 
 
 ## CSL building
-If you still want to try out *CSL* in spite of my advice against doing so,
+If you still want to try out `CSL` in spite of my advice against doing so,
 you can compile simply by typing 'make'. On Windows you need to have
-*MingW32* or *Mingw64* installed and you need to make sure that the gcc is in
+`MingW32` or `Mingw64` installed and you need to make sure that the gcc is in
 the path. You also need to set the environment variable MINGW_LOCATION to
-point to the path that *MingW* is installed in.
+point to the path that `MingW` is installed in.
 
 Further information about the build process is in the file README.build.
 
-At this point in time the development of *CSL* is still in progress. It
-will compile and leave a test-case in the *rt/* directory. Running that
-executable will cause the test script *rt/test_input.csl* to be executed in
+At this point in time the development of `CSL` is still in progress. It
+will compile and leave a test-case in the `rt/` directory. Running that
+executable will cause the test script `rt/test_input.csl` to be executed in
 the interpreter. The test script is designed to exercise most of the
 functionality that is being added to the interpreter (so it will drop into
 the built-in debugger for some of the tests).
@@ -113,7 +113,7 @@ functions within them (.so and .dll files), and allow the host/caller
 program to locate functions within the runtime and evaluate them.
 
 Right now, I'm just trying to get to a point where the script can define
-functions compatible with *C* structs, and of course implement the missing
+functions compatible with `C` structs, and of course implement the missing
 operators.
 
 ## Licence
