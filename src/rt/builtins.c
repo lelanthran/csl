@@ -62,6 +62,8 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
       if (atom_list_index (trap, 1)->type == atom_NATIVE) {
          atom_t *tmp = atom_list_new ();
          atom_list_ins_tail (tmp, atom_dup (atom_list_index (trap, 1)));
+         atom_list_ins_tail (tmp, atom_new (atom_QUOTE, NULL));
+         atom_list_ins_tail (tmp, atom_dup (atom_list_index (trap, 0)));
          for (size_t i=1; args[i]; i++) {
             atom_list_ins_tail (tmp, atom_dup (args[i]));
          }
@@ -82,6 +84,168 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
    return ret;
 }
 
+static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   static const char *help_msg[] = {
+      "Commands must be entered on a single line only. Each line is",
+      "limited to 1024 bytes.",
+      "",
+      "help:      This message",
+      "bt:        Display the call stack",
+      "locals:    Display the local symbol table",
+      "globals:   Display the global symbol table",
+      "kill:      Terminate the program and runtime",
+      "eval:      Print the evaluation of a single expression",
+      "resume:    Attempt to resume execution, using the",
+      "           expression specified as the evaluation result."
+   };
+
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   for (size_t i=0; i<sizeof help_msg/sizeof help_msg[0]; i++) {
+      fprintf (stderr, "%s\n", help_msg[i]);
+   }
+
+   return NULL;
+}
+
+static atom_t *debug_bt (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+static atom_t *debug_locals (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+static atom_t *debug_globals (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+static atom_t *debug_eval (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+static atom_t *debug_resume (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   return NULL;
+}
+
+struct cmd_t {
+   const char *cmd;
+   atom_t *(*fptr) (rt_t *, atom_t *, atom_t **, size_t);
+};
+
+static const struct cmd_t *debug_find_cmd (const char *cmd)
+{
+   static const struct cmd_t cmds[] = {
+      { "help",      debug_help     },
+      { "bt",        debug_bt       },
+      { "locals",    debug_locals   },
+      { "globals",   debug_globals  },
+      { "kill",      debug_kill     },
+      { "eval",      debug_eval     },
+      { "resume",    debug_resume   },
+   };
+
+   for (size_t i=0; i<sizeof cmds/sizeof cmds[0]; i++) {
+      if ((strcmp (cmd, cmds[i].cmd))==0)
+         return cmds[i].fptr;
+   }
+
+   fprintf (stderr, "Command [%s] not found.\n", cmd);
+   return NULL;
+}
+
+static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+{
+   char line[1024 + 3];
+   char **cmd = NULL;
+
+   fprintf (stderr, "Entered debugger console. Type \"help\" for a list "
+                    "of commands.\n");
+
+   memset (line, 0, sizeof line);
+
+   atom_t *ret = NULL;
+   fprintf (stderr, "\n> ");
+   while (!feof (stdin) && !ferror (stdin) &&
+           fgets (line, sizeof line - 2, stdin)) {
+
+      atom_del (ret);
+      ret = NULL;
+
+      xstr_delarray (cmd); cmd = NULL;
+
+      char *tmp = strchr (line, '\n');
+      if (tmp)
+         *tmp = 0;
+
+      cmd = xstr_split (line, " ");
+      if (!cmd) {
+         fprintf (stderr, "Command [%s] not understood\n", line);
+         continue;
+      }
+      atom_t *(*fptr) (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+
+      fptr = debug_find_cmd (cmd[0]);
+      if (!fptr) {
+         fprintf (stderr, "\n> ");
+         continue;
+      }
+
+      if ((ret = fptr (rt, sym, args, nargs)))
+         break;
+
+      fprintf (stderr, "\n> ");
+   }
+
+   xstr_delarray (cmd); cmd = NULL;
+
+   return ret;
+}
+
 atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    rt = rt;
@@ -96,7 +260,8 @@ atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, siz
    fprintf (stderr, "\nLOCAL SYMBOL TABLE\n");
    atom_print (sym, 0, stderr);
    rt_print (rt, stderr);
-   return atom_new (atom_INT, "1");
+
+   return debugger (rt, (atom_t *)sym, (atom_t **)args,  nargs);
 }
 
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
