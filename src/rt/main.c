@@ -48,9 +48,9 @@ int main (void)
       atom_print (atom, 0, stdout);
       printf ("\n");
 
-      printf ("------------");
+      printf (">>>>>>>\n");
       result = rt_eval (rt, NULL, atom);
-      printf ("------------\n");
+      printf ("<<<<<<<\n");
 
       if (!result) {
          XERROR ("Eval error near [%s]\n", token_string (tokens[index]));

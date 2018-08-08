@@ -483,7 +483,7 @@ errorexit:
    return tmp;
 }
 
-static void print_numbered_list (atom_t *list, FILE *outf)
+void rt_print_numbered_list (atom_t *list, FILE *outf)
 {
    size_t len = atom_list_length (list);
    for (size_t i=0; i<len; i++) {
@@ -492,6 +492,25 @@ static void print_numbered_list (atom_t *list, FILE *outf)
       fprintf (outf, "\n");
    }
 }
+
+void rt_print_globals (rt_t *rt, FILE *outf)
+{
+   fprintf (outf, "\nSYMBOL TABLE\n");
+   rt_print_numbered_list (rt->symbols, outf);
+}
+
+void rt_print_call_stack (rt_t *rt, FILE *outf)
+{
+   fprintf (outf, "\nCALL STACK\n");
+   rt_print_numbered_list (rt->stack, outf);
+}
+
+void rt_print_traps (rt_t *rt, FILE *outf)
+{
+   fprintf (outf, "\nTRAP HANDLERS\n");
+   rt_print_numbered_list (rt->traps, outf);
+}
+
 
 void rt_print (rt_t *rt, FILE *outf)
 {
@@ -512,12 +531,9 @@ void rt_print (rt_t *rt, FILE *outf)
    atom_print (rt->traps, 0, outf);
    fprintf (outf, "\n");
    */
-   fprintf (outf, "\nSYMBOL TABLE\n");
-   print_numbered_list (rt->symbols, outf);
-   fprintf (outf, "\nCALL STACK\n");
-   print_numbered_list (rt->stack, outf);
-   fprintf (outf, "\nTRAP HANDLERS\n");
-   print_numbered_list (rt->traps, outf);
+   rt_print_globals (rt, outf);
+   rt_print_call_stack (rt, outf);
+   rt_print_traps (rt, outf);
    fprintf (outf, "\n");
 }
 

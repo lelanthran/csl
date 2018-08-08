@@ -1,10 +1,14 @@
 #include <stdbool.h>
+#include <string.h>
 
 #include "parser/atom.h"
+#include "parser/parser.h"
 #include "rt/builtins.h"
 #include "rt/rt.h"
 #include "ll/ll.h"
+#include "token/token.h"
 
+#include "xstring/xstring.h"
 
 atom_t *builtins_TRAP_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
@@ -84,18 +88,74 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
    return ret;
 }
 
-static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *eval_string (rt_t *rt, const atom_t *sym, const char *string)
+{
+   bool error = true;
+
+   token_t **tokens = NULL;
+
+   atom_t *expr = NULL,
+          *ret = NULL;
+
+   char *tmp = NULL,
+        *copy = NULL;
+
+   if (!(copy = xstr_dup (string))) {
+      fprintf (stderr, "Out of memory\n");
+      goto errorexit;
+   }
+
+   tmp = copy;
+
+   if (!(tokens = token_read_string (&tmp, "<stdin>"))) {
+      fprintf (stderr, "Cannot find tokens in [%s]\n", string);
+      goto errorexit;
+   }
+
+   size_t index = 0;
+   if (!(expr = parser_parse (tokens, &index))) {
+      fprintf (stderr, "Cannot parse string [%s]\n", string);
+      goto errorexit;
+   }
+
+   if (!(ret = rt_eval (rt, sym, expr))) {
+      fprintf (stderr, "Failed to parse expression [%s]\n", string);
+      goto errorexit;
+   }
+
+   error = false;
+
+errorexit:
+   free (copy);
+
+   atom_del (expr);
+
+   for (size_t i=0; tokens[i]; i++) {
+      token_del (tokens[i]);
+   }
+   free (tokens);
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    static const char *help_msg[] = {
       "Commands must be entered on a single line only. Each line is",
       "limited to 1024 bytes.",
       "",
-      "help:      This message",
-      "bt:        Display the call stack",
-      "locals:    Display the local symbol table",
-      "globals:   Display the global symbol table",
-      "kill:      Terminate the program and runtime",
-      "eval:      Print the evaluation of a single expression",
+      "help:      This message.",
+      "bt:        Display the call stack.",
+      "locals:    Display the local symbol table.",
+      "globals:   Display the global symbol table.",
+      "traps:     Display the trap handlers.",
+      "kill:      Terminate the program and runtime.",
+      "eval:      Print the evaluation of a single expression.",
       "resume:    Attempt to resume execution, using the",
       "           expression specified as the evaluation result."
    };
@@ -103,7 +163,7 @@ static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
 
    for (size_t i=0; i<sizeof help_msg/sizeof help_msg[0]; i++) {
       fprintf (stderr, "%s\n", help_msg[i]);
@@ -112,76 +172,117 @@ static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
    return NULL;
 }
 
-static atom_t *debug_bt (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_bt (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
+
+   rt_print_call_stack (rt, stderr);
+   fprintf (stderr, "\n");
 
    return NULL;
 }
 
-static atom_t *debug_locals (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_traps (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
+
+   rt_print_traps (rt, stderr);
+   fprintf (stderr, "\n");
 
    return NULL;
 }
 
-static atom_t *debug_globals (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_locals (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
+
+   rt_print_numbered_list (sym, stderr);
+   fprintf (stderr, "\n");
 
    return NULL;
 }
 
-static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_globals (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
+
+   rt_print_globals (rt, stderr);
+   fprintf (stderr, "\n");
 
    return NULL;
 }
 
-static atom_t *debug_eval (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
    sym = sym;
    args = args;
-   nargs = nargs;
+   cmds = cmds;
+
+   int ret = 0;
+
+   fprintf (stderr, "Terminating runtime (No cleanup is performed)\n");
+   if (cmds && cmds[0]) {
+      sscanf (cmds[0], "%i", &ret);
+   }
+   exit (ret);
+
+   // Shut up the compiler.
+   return NULL;
+}
+
+static atom_t *debug_eval (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   cmds = cmds;
+
+   atom_t *val = eval_string (rt, sym, cmds[0]);
+
+   atom_print (val, 0, stderr);
+   fprintf (stderr, "\n");
+
+   atom_del (val);
 
    return NULL;
 }
 
-static atom_t *debug_resume (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
+static atom_t *debug_resume (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
-   rt = rt;
-   sym = sym;
    args = args;
-   nargs = nargs;
 
-   return NULL;
+   if (!cmds || !cmds[0]) {
+      fprintf (stderr, "No expression provided to evaluate\n");
+      return NULL;
+   }
+
+   return eval_string (rt, sym, cmds[0]);
 }
 
 struct cmd_t {
    const char *cmd;
-   atom_t *(*fptr) (rt_t *, atom_t *, atom_t **, size_t);
+   atom_t *(*fptr) (rt_t *, atom_t *, atom_t **, char **);
 };
 
-static const struct cmd_t *debug_find_cmd (const char *cmd)
+static void *debug_find_cmd (const char *cmd)
 {
    static const struct cmd_t cmds[] = {
       { "help",      debug_help     },
       { "bt",        debug_bt       },
+      { "traps",     debug_traps    },
       { "locals",    debug_locals   },
       { "globals",   debug_globals  },
       { "kill",      debug_kill     },
@@ -227,7 +328,7 @@ static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
          fprintf (stderr, "Command [%s] not understood\n", line);
          continue;
       }
-      atom_t *(*fptr) (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs);
+      atom_t *(*fptr) (rt_t *, atom_t *, atom_t **, char **);
 
       fptr = debug_find_cmd (cmd[0]);
       if (!fptr) {
@@ -235,7 +336,7 @@ static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
          continue;
       }
 
-      if ((ret = fptr (rt, sym, args, nargs)))
+      if ((ret = fptr (rt, sym, args, &cmd[1])))
          break;
 
       fprintf (stderr, "\n> ");

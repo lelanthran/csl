@@ -38,6 +38,13 @@ extern "C" {
 
    atom_t *rt_eval (rt_t *rt, const atom_t *symbols, const atom_t *atom);
 
+
+
+   void rt_print_numbered_list (atom_t *list, FILE *outf);
+   void rt_print_globals (rt_t *rt, FILE *outf);
+   void rt_print_call_stack (rt_t *rt, FILE *outf);
+   void rt_print_traps (rt_t *rt, FILE *outf);
+
    void rt_print (rt_t *rt, FILE *outf);
 
 #ifdef __cplusplus
