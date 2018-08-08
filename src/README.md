@@ -1,7 +1,7 @@
 # C Scripting Language
 ## What is *CSL*?
 *CSL* is a simple lisp-like language for scripting high-level logic
-and data structures in a way that interfaces easily to the C programming
+and data structures in a way that interfaces easily to the *C* programming
 language.
 
 You don't want to use this language - it's a work-in-progress and not
@@ -9,7 +9,7 @@ yet fit to use. You are encouraged to use one of  the alternatives listed
 below.
 
 ## Alternatives
-If you really were looking for a scripting language for your C programs
+If you really were looking for a scripting language for your *C* programs
 then you should avoid *CSL* and use one of the existing scripting
 languages. I provide a short list below - you can easily find out more
 about each alternative with a brief search on the internet:
@@ -30,7 +30,7 @@ about each alternative with a brief search on the internet:
    apparently changes very often when *Lua* changes a major version
    number. *Lua* is more suited to running entire scripts from *C* rather
    than running individual functions (although it can do both, the latter
-   it more involved). Since that is exactly what most programmers want
+   is more involved). Since that is exactly what most programmers want
    from a scripting language this is no big deal.
 
    *Lua* has found quite a successful niche as the logic and event
@@ -43,7 +43,7 @@ about each alternative with a brief search on the internet:
    default also come with the *Tk* Graphical User Interface library.
 
    *Tcl/Tk* has been used with moderate success in many embedded environments,
-   altough its usage has dropped in the last decade.
+   although its usage has dropped in the last decade.
 
 4. If you are looking specifically for a lisp-ish language then you can't
    go wrong with either *ECL* (Embeddable Common Lisp) or *GCL* (Gnu
@@ -77,7 +77,7 @@ point to the path that *MingW* is installed in.
 Further information about the build process is in the file README.build.
 
 At this point in time the development of *CSL* is still in progress. It
-will compile and leave a test-case in thr *rt/* directory. Running that
+will compile and leave a test-case in the *rt/* directory. Running that
 executable will cause the test script *rt/test_input.csl* to be executed in
 the interpreter. The test script is designed to exercise most of the
 functionality that is being added to the interpreter (so it will drop into
@@ -88,21 +88,21 @@ by the host program. A general interpreter that can be run from the
 command line will be produced in due course.
 
 ## CSL capabilities
-Right now scripts are written in a lisp-ish syntax. The actual syntax s
+Right now scripts are written in a lisp-ish syntax. The actual syntax is
 not going to change. The interpreter (embedded into the application) will
 allow scripts to:
 1. Call the built in functions (there is no documentation on this yet),
 1. Evaluate using the built-in operators (arithmetic only, for now), with
-   plans to add in the boolean operators in the future.
-1. Define global variables using a 'define' builtin function,
-1. Create local variables with a 'let' builting function,
+   plans to add in the boolean operators in the future,
+1. Define global variables using a 'define' built-in function,
+1. Create local variables with a 'let' built-in function,
 1. Create functions, and then store them as a global symbol (this means
    that functions are by definition anonymous),
 1. Evaluate symbols (including functions) from both global and local
    scope,
 1. Recursively call functions,
 1. Set, clear and generate traps for error conditions,
-1. Invoke the builtin debugger to examine program state when a trap is
+1. Invoke the built-in debugger to examine program state when a trap is
    unhandled.
 
 Admittedly that's not an impressive list of capabilities, but I did warn
@@ -117,6 +117,7 @@ functions compatible with *C* structs, and of course implement the missing
 operators.
 
 ## Licence
+```
 Copyright (c) 2018, Lelanthran Manickum
 All rights reserved.
 
@@ -139,5 +140,6 @@ DIRECT, INDIRECT, INCIDENTAL, SPECIAL,  EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDINGa  NEGLIGENCE OR OTHERWISE) ARISING  IN ANY WAY OUT OF THE USE OF
+(INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING  IN ANY  WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
