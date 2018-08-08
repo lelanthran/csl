@@ -46,3 +46,7 @@
 
 9. Need to add type promotion/coercion rules when comparing and assign to
    atoms.
+
+10. Must change all error display/handling in builtins.c to use the new
+   trap mechanism.
+
