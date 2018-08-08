@@ -112,6 +112,12 @@ static atom_t *eval_string (rt_t *rt, const atom_t *sym, const char *string)
       goto errorexit;
    }
 
+   size_t ntokens = 0;
+   for (size_t i=0; tokens[i]; i++) {
+      fprintf (stderr, "[%zu]: [%s]\n", i, token_string (tokens[i]));
+      ntokens++;
+   }
+
    size_t index = 0;
    if (!(expr = parser_parse (tokens, &index))) {
       fprintf (stderr, "Cannot parse string [%s]\n", string);
@@ -147,7 +153,12 @@ static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    static const char *help_msg[] = {
       "Commands must be entered on a single line only. Each line is",
-      "limited to 1024 bytes.",
+      "limited to 1024 bytes. Commands and each argument to a command",
+      "is delimited with a single colon. For example:",
+      "     eval: (+ 2 3)",
+      "All messages from the debugger are printed to stderr. All input",
+      "is read from stdin. When EOF is read on stdin the debugger resumes",
+      "execution with a NULL expression.",
       "",
       "help:      This message.",
       "bt:        Display the call stack.",
@@ -158,6 +169,7 @@ static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
       "eval:      Print the evaluation of a single expression.",
       "resume:    Attempt to resume execution, using the",
       "           expression specified as the evaluation result."
+      "",
    };
 
    rt = rt;
@@ -233,7 +245,7 @@ static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
    int ret = 0;
 
-   fprintf (stderr, "Terminating runtime (No cleanup is performed)\n");
+   fprintf (stderr, "Terminating runtime (No cleanup is performed)\n\n\n");
    if (cmds && cmds[0]) {
       sscanf (cmds[0], "%i", &ret);
    }
@@ -323,7 +335,7 @@ static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
       if (tmp)
          *tmp = 0;
 
-      cmd = xstr_split (line, " ");
+      cmd = xstr_split (line, ":");
       if (!cmd) {
          fprintf (stderr, "Command [%s] not understood\n", line);
          continue;
