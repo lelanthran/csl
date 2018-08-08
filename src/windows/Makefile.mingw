@@ -12,7 +12,7 @@ SHELL=cmd.exe /c
 MAKESHELL=cmd.exe /c
 
 CFLAGS+=-D__USE_MINGW_ANSI_STDIO=1
-LDEXTRAFLAGS=\
+WIN32LDEXTRAFLAGS=\
 	-lws2_32\
 	-L$(MINGW_LOCATION)/opt/lib -lregex
 

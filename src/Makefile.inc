@@ -145,7 +145,7 @@ CXXFLAGS+= -c -W -Wall -std=c++11 -fPIC\
 	$(MYINCLUDEDIRS)\
 	$(MYDEFINES)
 
-LDEXTRAFLAGS+=-lpthread $(MYLIBS) -lxc -lregex
+LDEXTRAFLAGS+=-lpthread $(MYLIBS) -lxc $(WIN32LDEXTRAFLAGS)
 
 DEBUG_FLAG= -ggdb
 RELEASE_FLAG= -O3
