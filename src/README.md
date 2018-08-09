@@ -25,7 +25,7 @@ about each alternative with a brief search on the internet:
    More recently, a little progress has been made in the `Python` community
    towards performing type-checking prior to runtime.
 
-2. `Lua` has enjoyed considerable success as a scripting language for `C`
+1. `Lua` has enjoyed considerable success as a scripting language for `C`
    and `C++`. Interfacing between `Lua` and `C` is pretty complicated and
    apparently changes very often when `Lua` changes a major version
    number. `Lua` is more suited to running entire scripts from `C` rather
@@ -36,7 +36,7 @@ about each alternative with a brief search on the internet:
    `Lua` has found quite a successful niche as the logic and event
    scripting engine for games. Make of that what you will.
 
-3. `Tcl` is one of the older scripting languages. While it is pretty
+1. `Tcl` is one of the older scripting languages. While it is pretty
    simple to start with and understand it is fairly limited due to its
    type system which uses all data as either strings or lists of strings.
    Nevertheless, it interfaces with `C` extremely well and it does by
@@ -45,10 +45,10 @@ about each alternative with a brief search on the internet:
    `Tcl/Tk` has been used with moderate success in many embedded environments,
    although its usage has dropped in the last decade.
 
-4. If you are looking specifically for a lisp-ish language then you can't
+1. If you are looking specifically for a lisp-ish language then you can't
    go wrong with either `ECL` (Embeddable Common Lisp) or `GCL` (Gnu
    Common Lisp). They both have exceptional `C` interface capabilities due
-   to the way they work. `ECL` and `GCL` both `compile` their input `Lisp`
+   to the way they work. `ECL` and `GCL` both **compile** their input `Lisp`
    source into ANSI-C, which is then passed off to gcc for compilation
    into native code.
 
@@ -60,7 +60,7 @@ about each alternative with a brief search on the internet:
 
    The downside is that you'll have to learn lisp.
 
-5. `CINT` is a `C` interpreter. This means that your scripting language
+1. `CINT` is a `C` interpreter. This means that your scripting language
    is the same language as your host language (either `C` or `C++`).
    While I haven't personally used it, reports of its conformance level
    with pre-C99 is quite good. It apparently also makes interfacing with
@@ -70,7 +70,7 @@ about each alternative with a brief search on the internet:
 ## CSL building
 If you still want to try out `CSL` in spite of my advice against doing so,
 you can compile simply by typing 'make'. On Windows you need to have
-`MingW32` or `Mingw64` installed and you need to make sure that the gcc is in
+`MingW32` or `MingW64` installed and you need to make sure that the gcc is in
 the path. You also need to set the environment variable MINGW_LOCATION to
 point to the path that `MingW` is installed in.
 
