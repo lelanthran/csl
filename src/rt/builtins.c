@@ -430,6 +430,8 @@ errorexit:
 
 atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
+   atom_t *ret = NULL;
+
    sym = sym;
    if (nargs != 2) {
       fprintf (stderr, "--------------------------------------\n");
@@ -442,10 +444,24 @@ atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
       return NULL;
    }
 
-   atom_t *existing = rt_symbol_remove (rt->symbols, args[0]);
+   atom_t *existing = rt_symbol_find (sym, args[0]);
+
+   if (existing) {
+
+      existing = rt_symbol_remove (sym, atom_list_index (existing, 0));
+      ret = atom_dup (rt_symbol_add (sym, args[0], args[1]));
+
+   } else {
+
+      existing = rt_symbol_find (rt->symbols, args[0]);
+      existing = rt_symbol_remove (rt->symbols, atom_list_index (existing, 0));
+      ret = atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
+
+   }
+
    atom_del (existing);
 
-   return atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
+   return ret;
 }
 
 atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
@@ -503,11 +519,14 @@ atom_t *builtins_PRINT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
    rt = rt;
    sym = sym;
 
+   atom_t *ret = NULL;
    for (size_t i=0; args[i]; i++) {
+      atom_del (ret);
+      ret = atom_dup (args[i]);
       atom_print (args[i], 0, stdout);
    }
 
-   return atom_new (atom_NIL, NULL);
+   return ret ? ret : atom_new (atom_NIL, NULL);
 }
 
 atom_t *builtins_CONCAT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
@@ -545,9 +564,19 @@ atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
    atom_t *symbols = sym ? atom_concatenate (sym, args[0], NULL)
                          : atom_dup (args[0]);
 
-   atom_t *ret = rt_eval (rt, symbols, args[1]);
+   atom_t *ret = NULL;
+
+   for (size_t i=1; args[i]; i++) {
+      atom_del (ret); ret = NULL;
+      atom_print (args[i], 0, stdout);
+      ret = rt_eval (rt, symbols, args[i]);
+   }
 
    atom_del (symbols);
+
+   if (!ret) {
+      // TODO: issue a trap
+   }
 
    return ret;
 }

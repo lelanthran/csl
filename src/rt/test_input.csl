@@ -120,3 +120,13 @@
 
 ; (bi_trap 'TRAP_NOPARAM)
 
+(bi_let '((one 1) (two 2))
+  '(bi_print ">>>>>>>>>>>>>>>> " one)
+  '(bi_set 'one two)
+  '(bi_print ">>>>>>>>>>>>>>>> " one))
+
+
+(bi_let '((one 1) (two 2))
+     '(bi_set 'one two)
+     '(bi_print "!!!!!!!!! " one))
+

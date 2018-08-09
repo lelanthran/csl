@@ -32,6 +32,9 @@ const atom_t *rt_symbol_add (atom_t *symbols, const atom_t *name, const atom_t *
       name, value, NULL,
    };
 
+   if (!symbols || !name || !value)
+      return NULL;
+
    atom_t *tlist = builtins_LIST (NULL, NULL, tmp, 2);
    if (!tlist) {
       goto errorexit;
@@ -93,7 +96,7 @@ atom_t *rt_symbol_remove (atom_t *symbols, const atom_t *name)
    const char *strname = NULL;
    size_t len = atom_list_length (symbols);
 
-   if (!name)
+   if (!symbols || !name)
       return NULL;
 
    strname = atom_to_string (name);
@@ -264,6 +267,9 @@ const atom_t *rt_eval_symbol (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
    const atom_t *entry = NULL;
 
+   if (!rt || !atom)
+      return NULL;
+
    entry = rt_symbol_find (sym, atom);
    if (entry) {
       return atom_list_index (entry, 1);
@@ -272,7 +278,8 @@ const atom_t *rt_eval_symbol (rt_t *rt, const atom_t *sym, const atom_t *atom)
    entry = rt_symbol_find (rt->symbols, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
-      atom_print (sym, 5, stdout);
+      rt_print_globals (rt, stdout);
+      rt_print_numbered_list (sym, stdout);
       return NULL;
    }
 
@@ -485,6 +492,9 @@ errorexit:
 
 void rt_print_numbered_list (atom_t *list, FILE *outf)
 {
+   if (!list || !outf)
+      return;
+
    size_t len = atom_list_length (list);
    for (size_t i=0; i<len; i++) {
       fprintf (outf, "[%zu]: ", i);
