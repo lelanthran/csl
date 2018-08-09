@@ -43,6 +43,21 @@ atom_t *builtins_GT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
 atom_t *builtins_GE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
+atom_t *builtins_BIT_AND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_OR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_XOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_NAND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_NOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_NXOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_BIT_NOT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+
+atom_t *builtins_LOG_AND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_LOG_OR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_LOG_NAND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_LOG_NOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_LOG_NOT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+
+
 atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 #ifdef __cplusplus

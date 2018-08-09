@@ -130,3 +130,35 @@
      '(bi_set 'one two)
      '(bi_print "!!!!!!!!! " one))
 
+(bi_bit_and 1 3 7 0 5 6)
+(bi_bit_and 1 2 3 4 5 6)
+(bi_bit_or 0 0 0 4 0 0)
+(bi_bit_or 0 0 0 0 0 0)
+(bi_bit_xor 0 0 0 4 0 0)
+(bi_bit_xor 0 0 0 0 0 0)
+
+(bi_bit_not 1)
+(bi_bit_not 0)
+
+(bi_bit_nand 1 2 3 0 5 6)
+(bi_bit_nand 1 2 3 4 5 6)
+(bi_bit_nor 0 0 0 4 0 0)
+(bi_bit_nor 0 0 0 0 0 0)
+(bi_bit_nxor 0 0 0 4 0 0)
+(bi_bit_nxor 0 0 0 0 0 0)
+
+
+(bi_log_and 1 3 7 0 5 6)
+(bi_log_and 1 2 3 4 5 6)
+(bi_log_or 0 0 0 4 0 0)
+(bi_log_or 0 0 0 0 0 0)
+
+(bi_log_not 1)
+(bi_log_not 0)
+
+(bi_log_nand 1 2 3 0 5 6)
+(bi_log_nand 1 2 3 4 5 6)
+(bi_log_nor 0 0 0 4 0 0)
+(bi_log_nor 0 0 0 0 0 0)
+
+

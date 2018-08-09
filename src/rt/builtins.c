@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <inttypes.h>
+
 #include "parser/atom.h"
 #include "parser/parser.h"
 #include "rt/builtins.h"
@@ -800,6 +802,123 @@ atom_t *builtins_EQ (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
 {
    return builtins_opcmp (rt, sym, args, nargs, 0, 0);
 }
+
+static atom_t *builtins_opbits (rt_t *rt, const atom_t *sym,
+                                const atom_t **args, size_t nargs,
+                                char op)
+{
+   bool error = true;
+   atom_t *ret = NULL;
+   bool used_float = false;
+
+   nargs = nargs;
+   rt = rt;
+   sym = sym;
+
+   if (!args || !args[0] || args[0]->type!=atom_INT)
+      goto errorexit;
+
+   int64_t final = *(int64_t *)args[0]->data;
+
+   for (size_t i=1; args[i]; i++) {
+
+      if (args[i]->type!=atom_INT)
+         goto errorexit;
+
+      int64_t val = *(int64_t *)args[i]->data;
+      switch (op) {
+         case 'A': final = final & val;      break;
+         case 'O': final = final | val;      break;
+         case 'X': final = final ^ val;      break;
+         case 'a': final = final & ~val;     break;
+         case 'o': final = final | ~val;     break;
+         case 'x': final = final ^ ~val;     break;
+         case 'N': final = ~val;             break;
+
+         case 'B': final = final && val;     break;
+         case 'P': final = final || val;     break;
+         case 'b': final = !(final && val);  break;
+         case 'p': final = !(final || val);  break;
+         case 'n': final = !val;             break;
+      }
+   }
+
+   ret = atom_int_new (final);
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      atom_del (ret);
+      printf (" *********************** Returning NULL\n");
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+atom_t *builtins_BIT_AND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'A');
+}
+
+atom_t *builtins_BIT_OR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'O');
+}
+
+atom_t *builtins_BIT_XOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'X');
+}
+
+atom_t *builtins_BIT_NAND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'a');
+}
+
+atom_t *builtins_BIT_NOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'o');
+}
+
+atom_t *builtins_BIT_NXOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'x');
+}
+
+atom_t *builtins_BIT_NOT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'N');
+}
+
+
+atom_t *builtins_LOG_AND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'B');
+}
+
+atom_t *builtins_LOG_OR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'P');
+}
+
+atom_t *builtins_LOG_NAND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'b');
+}
+
+atom_t *builtins_LOG_NOR (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'p');
+}
+
+atom_t *builtins_LOG_NOT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   return builtins_opbits (rt, sym, args, nargs, 'n');
+}
+
 
 
 atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)

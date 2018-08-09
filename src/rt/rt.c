@@ -174,11 +174,26 @@ static struct g_native_funcs_t {
    {  "-",              builtins_MINUS       },
    {  "/",              builtins_DIVIDE      },
    {  "*",              builtins_MULTIPLY    },
-};
 
-static const char *g_default_traps[] = {
-   // First, we try to handle all the system signals. If these are set to
-   // builtins_TRAP_DFL then we don't try to catch them
+   {  "bi_bit_and",     builtins_BIT_AND     },
+   {  "bi_bit_or",      builtins_BIT_OR      },
+   {  "bi_bit_xor",     builtins_BIT_XOR     },
+   {  "bi_bit_nand",    builtins_BIT_NAND    },
+   {  "bi_bit_nor",     builtins_BIT_NOR     },
+   {  "bi_bit_nxor",    builtins_BIT_NXOR    },
+   {  "bi_bit_not",     builtins_BIT_NOT     },
+
+   {  "bi_log_and",     builtins_LOG_AND     },
+   {  "bi_log_or",      builtins_LOG_OR      },
+   {  "bi_log_nand",    builtins_LOG_NAND    },
+   {  "bi_log_nor",     builtins_LOG_NOR     },
+   {  "bi_log_not",     builtins_LOG_NOT     },
+
+ };
+
+ static const char *g_default_traps[] = {
+    // First, we try to handle all the system signals. If these are set to
+    // builtins_TRAP_DFL then we don't try to catch them
    "SIGHUP",
    "SIGINT",
    "SIGQUIT",
