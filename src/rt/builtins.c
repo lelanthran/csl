@@ -186,7 +186,6 @@ static atom_t *debug_help (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
 static atom_t *debug_bt (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
-   rt = rt;
    sym = sym;
    args = args;
    cmds = cmds;
@@ -199,7 +198,6 @@ static atom_t *debug_bt (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
 static atom_t *debug_traps (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
-   rt = rt;
    sym = sym;
    args = args;
    cmds = cmds;
@@ -213,7 +211,6 @@ static atom_t *debug_traps (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 static atom_t *debug_locals (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
    rt = rt;
-   sym = sym;
    args = args;
    cmds = cmds;
 
@@ -225,7 +222,6 @@ static atom_t *debug_locals (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
 static atom_t *debug_globals (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
-   rt = rt;
    sym = sym;
    args = args;
    cmds = cmds;
@@ -245,10 +241,12 @@ static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
    int ret = 0;
 
-   fprintf (stderr, "Terminating runtime (No cleanup is performed)\n\n\n");
    if (cmds && cmds[0]) {
       sscanf (cmds[0], "%i", &ret);
    }
+
+   fprintf (stderr, "Terminating runtime with exit code [%i]\n",ret);
+   fprintf (stderr, "(No cleanup is being performed)\n\n\n");
    exit (ret);
 
    // Shut up the compiler.
@@ -257,8 +255,6 @@ static atom_t *debug_kill (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 
 static atom_t *debug_eval (rt_t *rt, atom_t *sym, atom_t **args, char **cmds)
 {
-   rt = rt;
-   sym = sym;
    args = args;
    cmds = cmds;
 
@@ -315,6 +311,8 @@ static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
 {
    char line[1024 + 3];
    char **cmd = NULL;
+
+   nargs = nargs;
 
    fprintf (stderr, "Entered debugger console. Type \"help\" for a list "
                     "of commands.\n");
@@ -444,16 +442,16 @@ atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
       return NULL;
    }
 
-   atom_t *existing = rt_symbol_find (sym, args[0]);
+   atom_t *existing = (atom_t *)rt_symbol_find (sym, args[0]);
 
    if (existing) {
 
-      existing = rt_symbol_remove (sym, atom_list_index (existing, 0));
-      ret = atom_dup (rt_symbol_add (sym, args[0], args[1]));
+      existing = rt_symbol_remove ((atom_t *)sym, atom_list_index (existing, 0));
+      ret = atom_dup (rt_symbol_add ((atom_t *)sym, args[0], args[1]));
 
    } else {
 
-      existing = rt_symbol_find (rt->symbols, args[0]);
+      existing = (atom_t *)rt_symbol_find (rt->symbols, args[0]);
       existing = rt_symbol_remove (rt->symbols, atom_list_index (existing, 0));
       ret = atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
 

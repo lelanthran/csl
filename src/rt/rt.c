@@ -278,8 +278,8 @@ const atom_t *rt_eval_symbol (rt_t *rt, const atom_t *sym, const atom_t *atom)
    entry = rt_symbol_find (rt->symbols, atom);
    if (!entry) {
       XERROR ("Failed to find symbol [%s]\n", atom_to_string (atom));
-      rt_print_globals (rt, stdout);
-      rt_print_numbered_list (sym, stdout);
+      // rt_print_globals (rt, stdout);
+      // rt_print_numbered_list (sym, stdout);
       return NULL;
    }
 
