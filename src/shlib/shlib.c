@@ -3,8 +3,6 @@
 
 #include "shlib/shlib.h"
 
-#include "xshare/xshare.h"
-
 #include "xvector/xvector.h"
 #include "xstring/xstring.h"
 #include "xerror/xerror.h"
@@ -43,14 +41,14 @@ static void nv_del (nvpair_t *nv)
    free (nv);
 }
 
-static nvpair_t *nv_find (xvector_t *xv, const char *name)
+static void *nv_find (xvector_t *xv, const char *name)
 {
    size_t len = XVECT_LENGTH (xv);
 
    for (size_t i=0; i<len; i++) {
       nvpair_t *nv = XVECT_INDEX (xv, i);
       if ((strcmp (name, nv->name))==0)
-         return nv;
+         return nv->handle;
    }
 
    return NULL;
@@ -99,7 +97,6 @@ void shlib_del (shlib_t *shlib)
 
    for (size_t i=0; i<len; i++) {
       nvpair_t *func = XVECT_INDEX (shlib->funcs, i);
-      xshare_close (func->handle);
       nv_del (func);
    }
    xvector_free (shlib->funcs);
@@ -108,7 +105,7 @@ void shlib_del (shlib_t *shlib)
 }
 
 
-bool shlib_loadlib (shlib_t *shlib, const char *name)
+xshare_library_t shlib_loadlib (shlib_t *shlib, const char *name)
 {
    bool error = true;
    void *handle = NULL;
@@ -145,3 +142,40 @@ errorexit:
 
    return !error;
 }
+
+xshare_symbol_t shlib_loadfunc (shlib_t *shlib, const char *func,
+                                                const char *lib)
+{
+   bool error = true;
+   nvpair_t *nv = NULL;
+   void *libhandle = NULL;
+   void *funchandle = NULL;
+
+   if (!shlib || !func || !lib)
+      return false;
+
+   shlib_loadlib (shlib, lib);
+
+   if (!(libhandle = nv_find (shlib->libs, lib)))
+      goto errorexit;
+
+   if (!(funchandle = xshare_symbol (libhandle, func)))
+      goto errorexit;
+
+   if (!(nv = nv_new (func, funchandle)))
+      goto errorexit;
+
+   if (!(xvector_ins_tail (shlib->funcs, nv)))
+      goto errorexit;
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      nv_del (nv);
+   }
+
+   return !error;
+}
+

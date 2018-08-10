@@ -2,7 +2,8 @@
 #ifndef H_SHLIB
 #define H_SHLIB
 
-#include <stdbool.h>
+#include "xshare/xshare.h"
+
 
 typedef struct shlib_t shlib_t;
 
@@ -15,7 +16,9 @@ extern "C" {
 
    // Don't include any path or extensions. Appropriate paths will be
    // used.
-   bool shlib_loadlib (shlib_t *shlib, const char *name);
+   xshare_library_t shlib_loadlib (shlib_t *shlib, const char *name);
+   xshare_symbol_t shlib_loadfunc (shlib_t *shlib, const char *func,
+                                                   const char *lib);
 
 #ifdef __cplusplus
 };

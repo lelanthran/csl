@@ -12,19 +12,31 @@
  * functions.
  */
 #define LIBRARY         ("libcsl")
-#define TESTFUNC_ADD    ("testfunc_add")
-#define TESTFUNC_SUB    ("testunc_sub")
+#define TESTFUNC_ADD    ("testlib_add")
+#define TESTFUNC_SUB    ("testlib_sub")
+
+typedef int (*fptr_t) (int, int);
 
 int main (void)
 {
    int ret = EXIT_FAILURE;
+   xshare_symbol_t t1 = NULL,
+                   t2 = NULL;
 
    shlib_t *sl = shlib_new ();
 
-   if (!shlib_loadlib (sl, LIBRARY)) {
+   if (!(t1 = shlib_loadfunc (sl, TESTFUNC_ADD, LIBRARY))) {
       XERROR ("Failed to load library [%s]\n", LIBRARY);
       goto errorexit;
    }
+
+   if (!(t2 = shlib_loadfunc (sl, TESTFUNC_ADD, LIBRARY))) {
+      XERROR ("Failed to load library [%s]\n", LIBRARY);
+      goto errorexit;
+   }
+
+   // printf ("r1: %i\n", ((fptr_t)t1) (3, 4));
+   // printf ("r2: %i\n", ((fptr_t)t2) (3, 4));
 
    ret = EXIT_SUCCESS;
 
