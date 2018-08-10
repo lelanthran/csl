@@ -480,9 +480,9 @@ atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_
       fprintf (stderr, "--------------------------------------\n");
       fprintf (stderr, "Too many arguments for DEFINE (found %zu). Possible "
                        "unterminated list.\n", nargs);
-      return rt_trap (rt, sym,
-                          atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
-                          atom_array_dup (args));
+      return rt_trap_a (rt, sym,
+                            atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            atom_array_dup (args));
    }
 
    if (rt_symbol_find (rt->symbols, args[0])) {

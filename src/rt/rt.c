@@ -143,7 +143,7 @@ const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
    return add_native_func (rt->traps, name, fptr);
 }
 
-atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
+atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
 {
    atom_t *ret = NULL;
    atom_t **args_array = NULL;
@@ -178,6 +178,62 @@ atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
 
    return ret;
 }
+
+atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap)
+{
+   bool error = true;
+   size_t nargs = 0;
+   atom_t **args = NULL;
+   atom_t *ret = NULL;
+   const atom_t *arg = NULL;
+
+   while ((arg = va_arg (ap, const atom_t *))!=NULL) {
+      nargs++;
+      atom_t **tmp = realloc (args, sizeof *tmp * (nargs + 1));
+      if (!tmp) {
+         fprintf (stderr, "Fatal OOM error in trap handling\n");
+         atom_print (trap, 0, stderr);
+         exit (-1);
+      }
+      args = tmp;
+
+      args[nargs - 1] = arg;
+      args[nargs] = 0;
+   }
+
+   if (!(ret = rt_trap_a (rt, sym, trap, args)))
+      goto errorexit;
+
+   error = false;
+
+errorexit:
+
+   for (size_t i=0; args[i]; i++) {
+      atom_del (args[i]);
+   }
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...)
+{
+   va_list ap;
+   atom_t *ret = NULL;
+
+   va_start (ap, trap);
+
+   ret = rt_trap_v (rt, sym, trap, ap);
+
+   va_end (ap);
+
+   return ret;
+}
+
 
 static struct g_native_funcs_t {
    const char *name;
@@ -263,7 +319,7 @@ static struct g_native_funcs_t {
    // program.
    "TRAP_PARAMCOUNT",
    "TRAP_NOPARAM",
-   "TRAP_EVAL_FAIL",
+   "TRAP_EVALERR",
 };
 
 rt_t *rt_new (void)
@@ -528,7 +584,7 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
       fprintf (stderr, "Eval failed [%p:%s]\n", atom, atom_to_string (atom));
       atom_print (atom, 0, stderr);
       tmp  = rt_trap (rt, sym, atom_new (atom_SYMBOL, "TRAP_EVALERR"),
-                               atom_dup (atom));
+                               atom_dup (atom), NULL);
    }
 
    if (!tmp) {

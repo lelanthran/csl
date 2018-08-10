@@ -39,7 +39,12 @@ extern "C" {
 
    // Note: rt_trap() functions free the symbol and the parameters
    // passed before returning. Caller must free the return value.
-   atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args);
+   //
+   // The variadic functions each look for successive atom_t * and stop
+   // when they encounter a NULL.
+   atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args);
+   atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap);
+   atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...);
 
    atom_t *rt_eval (rt_t *rt, const atom_t *symbols, const atom_t *atom);
 
