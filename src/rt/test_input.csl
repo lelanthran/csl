@@ -1,3 +1,169 @@
 
+
+(bi_list "two three"
+   (bi_list "next" 4 5.5)
+   "more items"
+   (bi_list 'another
+      '(bi_list (("nested bi_list" with)))
+   666))
+
+
+   (+ (+ 5 4.3333333 3 2 1) 1.1 7 )
+   (- 3.0 0.0009)
+   (* 2 2 2)
+   (/ 25 5.5)
+
+   (bi_define 'var1 "fifty")
+
+   (* var1 5)
+
+   (bi_print "Hello World" (bi_list 1 2 3 4))
+
+   (bi_define 'expr_results
+         (bi_eval (+ 1 2)
+               (- 5 2)
+               (* 3 2)
+               (/ 7 2)))
+
+   (bi_define 'biglist
+           (bi_concat '(1 2 3 4) '(a b c d) '(5 6 7 8) '(A B C D)))
+
+   (bi_print "Printing Biglist" biglist)
+
+(bi_define 'myfunc
+   '(bi_let '((a 11) (b 2))
+     '(bi_eval (bi_print "Function")
+         (* a b))))
+
+(bi_print "Eval result ............" (bi_eval myfunc))
+
+(bi_define 'realfunc '((a b) (+ a b)))
+
+(bi_funcall '(1 2) realfunc)
+
+(bi_define 'fadd '(bi_funcall '(1 2) 'realfunc))
+
+(fadd 1 2)
+
+
+(bi_defun 'realfunc '(a b)
+   '(+ (* a a) (* b b)))
+
+(realfunc 1 2)
+(realfunc 3 4)
+(realfunc 2 3)
+
+(bi_print (<   5.5   5.4))
+(bi_print (<=  5.5   5.4))
+(bi_print (<=  5.5   5.5))
+(bi_print (>   5.5   5.4))
+(bi_print (>=  5.5   5.4))
+(bi_print (>=  5.5   5.5))
+(bi_print (=   5.5   5.4))
+(bi_print (=   5.5   5.5))
+
+(bi_print (<   7   6))
+(bi_print (<=  7   6))
+(bi_print (<=  7   7))
+(bi_print (>   7   6))
+(bi_print (>=  7   6))
+(bi_print (>=  7   7))
+(bi_print (=   7   6))
+(bi_print (=   7   7))
+
+(bi_print (<   7.2  6))
+(bi_print (<=  7.2  6))
+(bi_print (<=  7.2  7))
+(bi_print (>   7.2  6))
+(bi_print (>=  7.2  6))
+(bi_print (>=  7.2  7))
+(bi_print (=   7.2  6))
+(bi_print (=   7.2  7))
+
+(bi_define 'v1 5)
+(bi_define 'v2 5.1)
+(bi_define 'v2 5.4)
+(bi_set 'v2 5.4)
+
+(if (>= v1 v2)
+   '(bi_print "TRUE")
+   '(bi_print "FALSE"))
+
+(if (<= v1 v2)
+   '(bi_print "TRUE")
+   '(bi_print "FALSE"))
+
+
+(bi_defun 'fact '(x)
+   '(if (= x 0)
+      1
+      '(* x (fact (- x 1)))))
+
+(fact 5) ; Call the function
+
+(bi_trap_set 'TRAP_TEST '(fact 4))
+(bi_trap_set 'TRAP_TEST '(bi_print "the replacement trap handler"))
+
+(bi_trap 'TRAP_TEST)
+
+(bi_undefine 'fact)
+
+(bi_defun 'fact '(x)
+   '(if (= x 0)
+      '(bi_trap 'TRAP_NOPARAM)
+      '(* x (fact (- x 1)))))
+
+(fact 4) ; Call the function
+
+; (bi_trap_clear 'TRAP_TEST)
+
+(fact 3) ; Call the function
+
+; (bi_trap 'TRAP_NOPARAM)
+
+(bi_let '((one 1) (two 2))
+  '(bi_print ">>>>>>>>>>>>>>>> " one)
+  '(bi_set 'one two)
+  '(bi_print ">>>>>>>>>>>>>>>> " one))
+
+
+(bi_let '((one 1) (two 2))
+     '(bi_set 'one two)
+     '(bi_print "!!!!!!!!! " one))
+
+(bi_bit_and 1 3 7 0 5 6)
+(bi_bit_and 1 2 3 4 5 6)
+(bi_bit_or 0 0 0 4 0 0)
+(bi_bit_or 0 0 0 0 0 0)
+(bi_bit_xor 0 0 0 4 0 0)
+(bi_bit_xor 0 0 0 0 0 0)
+
+(bi_bit_not 1)
+(bi_bit_not 0)
+
+(bi_bit_nand 1 2 3 0 5 6)
+(bi_bit_nand 1 2 3 4 5 6)
+(bi_bit_nor 0 0 0 4 0 0)
+(bi_bit_nor 0 0 0 0 0 0)
+(bi_bit_nxor 0 0 0 4 0 0)
+(bi_bit_nxor 0 0 0 0 0 0)
+
+
+(bi_log_and 1 3 7 0 5 6)
+(bi_log_and 1 2 3 4 5 6)
+(bi_log_or 0 0 0 4 0 0)
+(bi_log_or 0 0 0 0 0 0)
+
+(bi_log_not 1)
+(bi_log_not 0)
+
+(bi_log_nand 1 2 3 0 5 6)
+(bi_log_nand 1 2 3 4 5 6)
+(bi_log_nor 0 0 0 4 0 0)
+(bi_log_nor 0 0 0 0 0 0)
+
+(bi_define 'myerrorval 5 4)
+
+
 (bi_define 'myerrorval 5 4)
 

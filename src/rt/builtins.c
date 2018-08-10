@@ -348,6 +348,8 @@ static atom_t *debugger (rt_t *rt, atom_t *sym, atom_t **args, size_t nargs)
       }
       atom_t *(*fptr) (rt_t *, atom_t *, atom_t **, char **);
 
+      xstr_trim (cmd[0]);
+
       fptr = debug_find_cmd (cmd[0]);
       if (!fptr) {
          fprintf (stderr, "\n> ");
