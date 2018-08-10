@@ -74,6 +74,9 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
          atom_list_ins_tail (tmp, atom_new (atom_QUOTE, NULL));
          atom_list_ins_tail (tmp, atom_dup (atom_list_index (trap, 0)));
          for (size_t i=1; args[i]; i++) {
+            if (args[i]->type == atom_SYMBOL) {
+               atom_list_ins_tail (tmp, atom_new (atom_QUOTE, NULL));
+            }
             atom_list_ins_tail (tmp, atom_dup (args[i]));
          }
          ret = rt_eval (rt, sym, tmp);
