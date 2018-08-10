@@ -59,8 +59,11 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
 
    while (repeat) {
       const atom_t *trap = rt_symbol_find (rt->traps, args[0]);
-      if (!trap)
-         break;
+      if (!trap) {
+         fprintf (stderr, "\n\nUnhandled trap [%s], aborting\n\n",
+                           (char *)args[0]->data);
+         exit (-1);
+      }
 
       fprintf (stderr, "Received trap [%s], executing handler\n",
                         atom_to_string (atom_list_index (trap, 0)));
@@ -365,14 +368,16 @@ atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, siz
    sym = sym;
    nargs = nargs;
 
+   fprintf (stderr, "'\n");
+   fprintf (stderr, "\nLOCAL SYMBOL TABLE\n");
+   atom_print (sym, 0, stderr);
+   rt_print (rt, stderr);
+
    fprintf (stderr, "Default trap handler in '");
    for (size_t i=0; args[i]; i++) {
       atom_print (args[i], 0, stderr);
    }
    fprintf (stderr, "'\n");
-   fprintf (stderr, "\nLOCAL SYMBOL TABLE\n");
-   atom_print (sym, 0, stderr);
-   rt_print (rt, stderr);
 
    return debugger (rt, (atom_t *)sym, (atom_t **)args,  nargs);
 }
@@ -466,16 +471,13 @@ atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
 
 atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
-   sym = sym;
    if (nargs != 2) {
       fprintf (stderr, "--------------------------------------\n");
       fprintf (stderr, "Too many arguments for DEFINE (found %zu). Possible "
                        "unterminated list.\n", nargs);
-      for (size_t i=0; i<nargs; i++) {
-         fprintf (stderr, "element [%zu] = ", i);
-         atom_print (args[i], 0, stderr);
-      }
-      return NULL;
+      return rt_trap (rt, sym,
+                          atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                          atom_array_dup (args));
    }
 
    if (rt_symbol_find (rt->symbols, args[0])) {

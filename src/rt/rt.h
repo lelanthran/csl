@@ -3,6 +3,7 @@
 #define H_RT
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "parser/atom.h"
 
@@ -35,6 +36,10 @@ extern "C" {
 
    const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
                                                rt_builtins_fptr_t *fptr);
+
+   // Note: rt_trap() functions free the symbol and the parameters
+   // passed before returning. Caller must free the return value.
+   atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args);
 
    atom_t *rt_eval (rt_t *rt, const atom_t *symbols, const atom_t *atom);
 

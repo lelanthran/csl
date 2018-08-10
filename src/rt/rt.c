@@ -143,6 +143,42 @@ const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
    return add_native_func (rt->traps, name, fptr);
 }
 
+atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
+{
+   atom_t *ret = NULL;
+   atom_t **args_array = NULL;
+
+   size_t nargs = 0;
+   for (size_t i=0; args[i]; i++)
+      nargs++;
+
+   args_array = malloc (sizeof *args_array * (nargs + 2));
+   if (!args_array) {
+      fprintf (stderr, "Out of memory handling trap [%s]\n",
+                        (char *)trap->data);
+      exit (-1);
+   }
+   memset (args_array, 0, sizeof *args_array * (nargs + 2));
+
+   args_array[0] = trap;
+   for (size_t i=0; args[i]; i++) {
+      args_array[i+1] = args[i];
+   }
+
+   ret = builtins_TRAP (rt, sym, (const atom_t **)args_array, nargs+1);
+
+   free (args_array);
+
+   atom_del (trap);
+
+   for (size_t i=0; args[i]; i++) {
+      atom_del (args[i]);
+   }
+   free (args);
+
+   return ret;
+}
+
 static struct g_native_funcs_t {
    const char *name;
    rt_builtins_fptr_t *fptr;
@@ -223,8 +259,9 @@ static struct g_native_funcs_t {
    "SIGXCPU",
    "SIGXFSZ",
 
-   // All of these traps we catch, these are all specific to oiur running
+   // All of these traps we catch, these are all specific to our running
    // program.
+   "TRAP_PARAMCOUNT",
    "TRAP_NOPARAM",
    "TRAP_EVAL_FAIL",
 };
@@ -488,9 +525,15 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    }
 
    if (!tmp) {
-      XERROR ("Corrupt object [%p]\n", atom);
-      atom_print (atom, 0, stdout);
-      goto errorexit;
+      fprintf (stderr, "Eval failed [%p:%s]\n", atom, atom_to_string (atom));
+      atom_print (atom, 0, stderr);
+      tmp  = rt_trap (rt, sym, atom_new (atom_SYMBOL, "TRAP_EVALERR"),
+                               atom_dup (atom));
+   }
+
+   if (!tmp) {
+      fprintf (stderr, "Unhandled trap [TRAP_EVALERR], aborting\n");
+      exit (-1);
    }
 
    error = false;

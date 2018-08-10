@@ -137,36 +137,43 @@ static void a_pr_list (const atom_t *atom, size_t depth, FILE *outf)
 
 static void a_pr_quote (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "quot[%s]", (char *)atom->data);
 }
 
 static void a_pr_string (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "str[%s]", (char *)atom->data);
 }
 
 static void a_pr_symbol (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "sym[%s]", (char *)atom->data);
 }
 
 static void a_pr_int (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "int[%" PRIi64 "]", *(int64_t *)atom->data);
 }
 
 static void a_pr_float (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "flt[%f]", *(double *)atom->data);
 }
 
 static void a_pr_ffi (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "ffi[%p]", atom->data);
 }
 
 static void a_pr_native (const atom_t *atom, size_t depth, FILE *outf)
 {
+   depth = depth;
    fprintf (outf, "native[%p]", atom->data);
 }
 
@@ -676,4 +683,47 @@ const char *atom_to_string (const atom_t *atom)
    return atom->buffer;
 }
 
+atom_t **atom_array_dup (const atom_t **atoms)
+{
+   bool error = true;
+   atom_t **ret = NULL;
+
+   if (!atoms)
+      return NULL;
+
+   size_t natoms = 0;
+   for (size_t i=0; atoms[i]; i++)
+      natoms++;
+
+   ret = malloc (sizeof *ret * (natoms + 1));
+   if (!ret)
+      goto errorexit;
+   memset (ret, 0, sizeof *ret * (natoms + 1));
+
+   for (size_t i=0; atoms[i]; i++) {
+      ret[i] = atom_dup (atoms[i]);
+   }
+
+   error = false;
+
+errorexit:
+   if (error) {
+      atom_array_del (ret);
+      ret = NULL;
+   }
+
+   return ret;
+}
+
+void atom_array_del (atom_t **atoms)
+{
+   if (!atoms)
+      return;
+
+   for (size_t i=0; atoms[i]; i++) {
+      atom_del (atoms[i]);
+   }
+
+   free (atoms);
+}
 

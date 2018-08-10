@@ -70,6 +70,9 @@ extern "C" {
 
    const char *atom_to_string (const atom_t *atom);
 
+   atom_t **atom_array_dup (const atom_t **atoms);
+   void atom_array_del (atom_t **atoms);
+
 #ifdef __cplusplus
 }
 #endif
