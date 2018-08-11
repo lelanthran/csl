@@ -155,9 +155,10 @@ xshare_symbol_t shlib_loadfunc (shlib_t *shlib, const char *func,
    if (!shlib || !func || !lib)
       return false;
 
-   shlib_loadlib (shlib, lib);
+   if ((funchandle = nv_find (shlib->funcs, func)))
+      return funchandle;
 
-   if (!(libhandle = nv_find (shlib->libs, lib)))
+   if (!(libhandle = shlib_loadlib (shlib, lib)))
       goto errorexit;
 
    if (!(funchandle = xshare_symbol (libhandle, func))) {
