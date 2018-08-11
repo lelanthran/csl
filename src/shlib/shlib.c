@@ -160,8 +160,10 @@ xshare_symbol_t shlib_loadfunc (shlib_t *shlib, const char *func,
    if (!(libhandle = nv_find (shlib->libs, lib)))
       goto errorexit;
 
-   if (!(funchandle = xshare_symbol (libhandle, func)))
+   if (!(funchandle = xshare_symbol (libhandle, func))) {
+      XERROR ("Cannot locate symbol [%s]: %s\n", func, xshare_errmsg ());
       goto errorexit;
+   }
 
    if (!(nv = nv_new (func, funchandle)))
       goto errorexit;
