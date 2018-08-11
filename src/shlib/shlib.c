@@ -114,8 +114,8 @@ xshare_library_t shlib_loadlib (shlib_t *shlib, const char *name)
    if (!shlib || !name)
       return false;
 
-   if (nv_find (shlib->libs, name))
-      return true;
+   if ((handle = nv_find (shlib->libs, name)))
+      return handle;
 
    handle = xshare_open (name);
    if (!handle) {
@@ -136,11 +136,12 @@ errorexit:
    if (error) {
       if (handle) {
          xshare_close (handle);
+         handle = NULL;
       }
       nv_del (nv);
    }
 
-   return !error;
+   return handle;
 }
 
 xshare_symbol_t shlib_loadfunc (shlib_t *shlib, const char *func,
@@ -174,8 +175,9 @@ errorexit:
 
    if (error) {
       nv_del (nv);
+      funchandle = NULL;
    }
 
-   return !error;
+   return funchandle;
 }
 
