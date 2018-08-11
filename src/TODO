@@ -50,3 +50,7 @@
 10. Must change all error display/handling in builtins.c to use the new
    trap mechanism.
 
+11. Add in looping constructs (while, for, doloop, etc)
+
+12. Need easy way to define structs/types for ffi.
+

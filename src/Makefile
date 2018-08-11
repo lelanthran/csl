@@ -15,10 +15,10 @@ SUBPROJS=\
 	shlib
 
 # Your extra include directories, for headers that are not in the path.
-MYINCLUDEDIRS+= -I$(HOME)/include -lxc
+MYINCLUDEDIRS+= -I$(HOME)/include
 
 # Your extra libararies, for libraries that are not in the path.
-MYLIBS+= -L$(HOME)/lib/$(TARGET)
+MYLIBS+= -L$(HOME)/lib/$(TARGET) -lffi
 
 #############################################################
 # You should not need to modify anything below this comment #
