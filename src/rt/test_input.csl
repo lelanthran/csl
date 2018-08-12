@@ -1,1 +1,19 @@
-'testing:symbol
+
+(bi_defext 'tlib_add '("libcsl" "testlib_add" INT (INT INT)))
+(bi_defext 'tlib_sub '("libcsl" "testlib_sub" INT (INT INT)))
+(bi_defext 'tlib_big
+   '("libcsl" "testlib_big" UINT64_T (POINTER UINT8_T UINT64_T DOUBLE FLOAT)))
+
+; (bi_defun 'realfunc '(a b)
+;  '(+ (* a a) (* b b)))
+
+; (realfunc 4 5)
+(tlib_add 4 5)
+(tlib_sub 5 4)
+(tlib_big "Hello World - Large String To Function"
+          254
+          (* 1024 1024)
+          (/ 10.0 3.0)
+          (/ 25.0 2.0))
+
+

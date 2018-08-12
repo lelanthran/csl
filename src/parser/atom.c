@@ -24,7 +24,16 @@ static atom_t *a_new_list (atom_t *dst, const char *str)
 
 static atom_t *a_new_string (atom_t *dst, const char *str)
 {
-   dst->data = xstr_dup (str);
+   char *tmp = xstr_dup (str);
+
+   if (tmp && tmp[0]=='"') {
+      size_t nbytes = strlen (tmp);
+      memmove (&tmp[0], &tmp[1], nbytes);
+      char *equote = strrchr (tmp, '"');
+      if (equote)
+         *equote = 0;
+   }
+   dst->data = tmp;
    return dst;
 }
 

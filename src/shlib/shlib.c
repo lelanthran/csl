@@ -200,7 +200,7 @@ static const struct {
    { &ffi_type_sint32,   shlib_INT32_T  },
    { &ffi_type_uint64,   shlib_UINT64_T },
    { &ffi_type_sint64,   shlib_INT64_T  },
-   // { &ffi_type_float,    shlib_FLOAT    },
+   { &ffi_type_float,    shlib_FLOAT    },
    { &ffi_type_double,   shlib_DOUBLE   },
    { &ffi_type_uchar,    shlib_U_CHAR   },
    { &ffi_type_schar,    shlib_S_CHAR   },
@@ -239,6 +239,7 @@ static const struct {
    { shlib_INT16_T,     sizeof (int16_t)              },
    { shlib_INT32_T,     sizeof (int16_t)              },
    { shlib_INT64_T,     sizeof (int16_t)              },
+   { shlib_FLOAT,       sizeof (float)                },
    { shlib_DOUBLE,      sizeof (double)               },
    { shlib_SIZE_T,      sizeof (size_t)               },
    { shlib_S_CHAR,      sizeof (signed char)          },
@@ -287,7 +288,7 @@ void *get_ffi_value (struct shlib_pair_t *pair)
 
 int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
                    shlib_type_t return_type, void *return_value,
-                   struct shlib_pair_t **args)
+                   struct shlib_pair_t *args)
 {
    // TODO: Call prep_cif only once and keep the value in the fptr struct
    int ret = -1;
@@ -305,7 +306,7 @@ int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
    if (!(fptr = shlib_loadfunc (shlib, func, lib)))
       goto errorexit;
 
-   for (size_t i=0; args[i]; i++)
+   for (size_t i=0; args[i].type!=0; i++)
       nargs++;
 
    ret_type = *(get_ffi_type (return_type));
@@ -319,9 +320,9 @@ int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
    memset (arg_types, 0, (sizeof *arg_types) * (nargs + 1));
    memset (arg_values, 0, (sizeof *arg_values) * (nargs + 1));
 
-   for (size_t i=0; args[i]; i++) {
-      arg_types[i] = get_ffi_type (args[i]->type);
-      arg_values[i] = args[i]->data;
+   for (size_t i=0; args[i].type!=0; i++) {
+      arg_types[i] = get_ffi_type (args[i].type);
+      arg_values[i] = args[i].data;
    }
 
    ffi_status ffi_sc = ffi_prep_cif (&cif, FFI_DEFAULT_ABI,
@@ -341,5 +342,15 @@ errorexit:
    free (arg_values);
 
    return ret;
+}
+
+size_t shlib_sizeof (shlib_type_t type)
+{
+   for (size_t i=0; i<sizeof g_typelen / sizeof g_typelen[0]; i++) {
+      if (g_typelen[i].type==type)
+         return g_typelen[i].len;
+   }
+
+   return 0;
 }
 

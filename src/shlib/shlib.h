@@ -16,6 +16,7 @@ typedef enum {
    shlib_INT16_T,
    shlib_INT32_T,
    shlib_INT64_T,
+   shlib_FLOAT,
    shlib_DOUBLE,
    shlib_SIZE_T,
    shlib_S_CHAR,
@@ -56,7 +57,9 @@ extern "C" {
    // the pair being shlib_type_t and the second being the actual type.
    int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
                       shlib_type_t return_type, void *return_value,
-                      struct shlib_pair_t **args);
+                      struct shlib_pair_t *args);
+
+   size_t shlib_sizeof (shlib_type_t type);
 
 #ifdef __cplusplus
 };

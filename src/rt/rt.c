@@ -4,6 +4,7 @@
 
 #include "rt/rt.h"
 #include "rt/builtins.h"
+#include "shlib/shlib.h"
 
 #include "ll/ll.h"
 
@@ -149,7 +150,7 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
    atom_t **args_array = NULL;
 
    size_t nargs = 0;
-   for (size_t i=0; args[i]; i++)
+   for (size_t i=0; args && args[i]; i++)
       nargs++;
 
    args_array = malloc (sizeof *args_array * (nargs + 2));
@@ -161,7 +162,7 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
    memset (args_array, 0, sizeof *args_array * (nargs + 2));
 
    args_array[0] = trap;
-   for (size_t i=0; args[i]; i++) {
+   for (size_t i=0; args && args[i]; i++) {
       args_array[i+1] = args[i];
    }
 
@@ -171,7 +172,7 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
 
    atom_del (trap);
 
-   for (size_t i=0; args[i]; i++) {
+   for (size_t i=0; args && args[i]; i++) {
       atom_del (args[i]);
    }
    free (args);
@@ -185,9 +186,9 @@ atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap)
    size_t nargs = 0;
    atom_t **args = NULL;
    atom_t *ret = NULL;
-   const atom_t *arg = NULL;
+   atom_t *arg = NULL;
 
-   while ((arg = va_arg (ap, const atom_t *))!=NULL) {
+   while ((arg = va_arg (ap, atom_t *))!=NULL) {
       nargs++;
       atom_t **tmp = realloc (args, sizeof *tmp * (nargs + 1));
       if (!tmp) {
@@ -208,7 +209,7 @@ atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap)
 
 errorexit:
 
-   for (size_t i=0; args[i]; i++) {
+   for (size_t i=0; args && args[i]; i++) {
       atom_del (args[i]);
    }
 
@@ -234,8 +235,63 @@ atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...)
    return ret;
 }
 
+static const struct {
+   shlib_type_t type;
+   const char *name;
+} g_native_types[] = {
+   { shlib_NONE,        "NONE"        },
+   { shlib_VOID,        "VOID"        },
+   { shlib_NULL,        "NULL"        },
+   { shlib_UINT8_T,     "UINT8_T"     },
+   { shlib_UINT16_T,    "UINT16_T"    },
+   { shlib_UINT32_T,    "UINT32_T"    },
+   { shlib_UINT64_T,    "UINT64_T"    },
+   { shlib_INT8_T,      "INT8_T"      },
+   { shlib_INT16_T,     "INT16_T"     },
+   { shlib_INT32_T,     "INT32_T"     },
+   { shlib_INT64_T,     "INT64_T"     },
+   { shlib_FLOAT,       "FLOAT"       },
+   { shlib_DOUBLE,      "DOUBLE"      },
+   { shlib_SIZE_T,      "SIZE_T"      },
+   { shlib_S_CHAR,      "S_CHAR"      },
+   { shlib_S_SHORT,     "S_SHORT"     },
+   { shlib_S_INT,       "S_INT"       },
+   { shlib_S_LONG,      "S_LONG"      },
+   { shlib_S_LONG_LONG, "S_LONG_LONG" },
+   { shlib_U_CHAR,      "U_CHAR"      },
+   { shlib_U_SHORT,     "U_SHORT"     },
+   { shlib_U_INT,       "U_INT"       },
+   { shlib_U_LONG,      "U_LONG"      },
+   { shlib_U_LONG_LONG, "U_LONG_LONG" },
+   { shlib_POINTER,     "POINTER"     },
+   // Repeated for convenience
+   { shlib_S_CHAR,      "CHAR"        },
+   { shlib_S_SHORT,     "SHORT"       },
+   { shlib_S_INT,       "INT"         },
+   { shlib_S_LONG,      "LONG"        },
+   { shlib_S_LONG_LONG, "LONG_LONG"   },
+};
 
-static struct g_native_funcs_t {
+static const atom_t *rt_add_native_type (rt_t *rt,
+                                         const char *name,
+                                         shlib_type_t type)
+{
+   char tmp[18];
+
+   sprintf (tmp, "%i", type);
+
+   atom_t *sym = atom_new (atom_SYMBOL, name);
+   atom_t *val = atom_new (atom_INT, tmp);
+
+   atom_t *ret = rt_symbol_add (rt->symbols, sym, val);
+
+   atom_del (sym);
+   atom_del (val);
+
+   return ret;
+}
+
+static struct {
    const char *name;
    rt_builtins_fptr_t *fptr;
 } g_native_funcs[] = {
@@ -249,6 +305,7 @@ static struct g_native_funcs_t {
    {  "bi_concat",      builtins_CONCAT      },
    {  "bi_let",         builtins_LET         },
    {  "bi_defun",       builtins_DEFUN       },
+   {  "bi_defext",      builtins_DEFEXT      },
    {  "bi_funcall",     builtins_FUNCALL     },
    {  "bi_trap_set",    builtins_TRAP_SET    },
    {  "bi_trap_clear",  builtins_TRAP_CLEAR  },
@@ -320,6 +377,8 @@ static struct g_native_funcs_t {
    "TRAP_PARAMCOUNT",
    "TRAP_NOPARAM",
    "TRAP_EVALERR",
+   "TRAP_BADPARAM",
+   "TRAP_FFI",
 };
 
 rt_t *rt_new (void)
@@ -333,6 +392,10 @@ rt_t *rt_new (void)
    ret->symbols = atom_list_new ();
    ret->stack = atom_list_new ();
    ret->traps = atom_list_new ();
+   ret->shlib = shlib_new ();
+
+   if (!ret->symbols || !ret->stack || !ret->traps || !ret->shlib)
+      goto errorexit;
 
    for (size_t i=0; i<sizeof g_native_funcs/sizeof g_native_funcs[0]; i++) {
       if (!rt_add_native_func (ret, g_native_funcs[i].name,
@@ -343,6 +406,13 @@ rt_t *rt_new (void)
 
    for (size_t i=0; i<sizeof g_default_traps/sizeof g_default_traps[0]; i++) {
       if (!rt_set_native_trap (ret, g_default_traps[i], builtins_TRAP_DFL)) {
+         goto errorexit;
+      }
+   }
+
+   for (size_t i=0; i<sizeof g_native_types/sizeof g_native_types[0]; i++) {
+      if (!(rt_add_native_type (ret, g_native_types[i].name,
+                                     g_native_types[i].type))) {
          goto errorexit;
       }
    }
@@ -367,6 +437,7 @@ void rt_del (rt_t *rt)
    atom_del (rt->symbols);
    atom_del (rt->stack);
    atom_del (rt->traps);
+   shlib_del (rt->shlib);
 
    free (rt);
 }
@@ -438,6 +509,293 @@ static atom_t *rt_funcall_native (rt_t *rt, const atom_t *sym,
    rt_builtins_fptr_t *fptr = args[0]->data;
 
    return fptr (rt, sym, &args[1], nargs);
+}
+
+static bool check_type_compatible (const atom_t *actual, const atom_t *expected)
+{
+   int64_t actual_type = *(int64_t *)actual->data,
+           expected_type = *(int64_t *)expected->data;
+
+   if (actual_type == expected_type)
+      return true;
+
+   if (actual->type==atom_STRING && expected_type==shlib_POINTER)
+      return true;
+
+   if (actual->type==atom_INT && expected_type==shlib_FLOAT)
+      return true;
+
+   if (actual->type==atom_INT && expected_type==shlib_DOUBLE)
+      return true;
+
+   size_t s_actual = shlib_sizeof (actual_type),
+          s_expected = shlib_sizeof (expected_type);
+
+   if (s_actual <= s_expected)
+      return true;
+
+   return false;
+}
+
+static shlib_type_t promote_atom_to_native_type (const atom_t *src)
+{
+   if (src->type==atom_INT) {
+      int64_t type = *(int64_t *)src;
+      return (shlib_type_t) type;
+   }
+
+   if (src->type==atom_STRING || src->type==atom_SYMBOL ||
+       src->type==atom_NATIVE || src->type==atom_FFI) {
+      return shlib_POINTER;
+   }
+
+   if (src->type==atom_FLOAT) {
+      return shlib_DOUBLE;
+   }
+
+   return 0;
+}
+
+static void dumphex (uint8_t *buffer, size_t len)
+{
+   while (len--) {
+      printf ("0x%02x-",  *buffer++);
+   }
+   printf ("\n");
+}
+
+static void *promote_atom_to_native_data (const atom_t *src,
+                                                shlib_type_t type)
+{
+   void *ret = malloc (8);
+   if (!ret)
+      return NULL;
+
+   switch (type) {
+   case shlib_NONE:
+   case shlib_VOID:
+   case shlib_NULL:        free (ret); ret = NULL;                             break;
+
+   case shlib_UINT8_T:     *(uint8_t *)ret = *(int64_t *)src->data;            break;
+   case shlib_UINT16_T:    *(uint16_t *)ret = *(int64_t *)src->data;           break;
+   case shlib_UINT32_T:    *(uint32_t *)ret = *(int64_t *)src->data;           break;
+   case shlib_UINT64_T:    *(uint64_t *)ret = *(int64_t *)src->data;           break;
+   case shlib_INT8_T:      *(int8_t *)ret = *(int64_t *)src->data;             break;
+   case shlib_INT16_T:     *(int16_t *)ret = *(int64_t *)src->data;            break;
+   case shlib_INT32_T:     *(int32_t *)ret = *(int64_t *)src->data;            break;
+   case shlib_INT64_T:     *(int64_t *)ret = *(int64_t *)src->data;            break;
+   case shlib_FLOAT:       *(float *)ret = *(float *)src->data;                break;
+   case shlib_DOUBLE:      *(double *)ret = *(double *)src->data;              break;
+   case shlib_SIZE_T:      *(size_t *)ret = *(int64_t *)src->data;             break;
+   case shlib_S_CHAR:      *(signed char *)ret = *(int64_t *)src->data;        break;
+   case shlib_S_SHORT:     *(signed short *)ret = *(int64_t *)src->data;       break;
+   case shlib_S_INT:       *(signed int *)ret = *(int64_t *)src->data;         break;
+   case shlib_S_LONG:      *(signed long *)ret = *(int64_t *)src->data;        break;
+   case shlib_S_LONG_LONG: *(signed long long *)ret = *(int64_t *)src->data;   break;
+   case shlib_U_CHAR:      *(unsigned char *)ret = *(int64_t *)src->data;      break;
+   case shlib_U_SHORT:     *(unsigned short *)ret = *(int64_t *)src->data;     break;
+   case shlib_U_INT:       *(unsigned int *)ret = *(int64_t *)src->data;       break;
+   case shlib_U_LONG:      *(unsigned long *)ret = *(int64_t *)src->data;      break;
+   case shlib_U_LONG_LONG: *(unsigned long long *)ret = *(int64_t *)src->data; break;
+   case shlib_POINTER:     free (ret); ret = &src->data;                       break;
+   }
+
+   if (type==shlib_FLOAT) {
+      double tmpd = *(double *)src->data;
+      float tmpf = tmpd;
+      *(float *)ret = tmpf;
+   }
+
+   return ret;
+}
+
+static atom_t *promote_native_to_atom (const shlib_type_t type, void *data)
+{
+   atom_t *ret = atom_new (atom_UNKNOWN, NULL);
+   if (!ret)
+      return NULL;
+
+   ret->data = malloc (8);
+   if (!ret->data) {
+      free (ret);
+      return NULL;
+   }
+   memset (ret->data, 0, 8);
+
+   ret->type = atom_INT;
+
+   switch (type) {
+   case shlib_NONE:
+   case shlib_VOID:
+   case shlib_NULL:        free (ret->data); free (ret); ret = NULL;             break;
+
+   case shlib_UINT8_T:     *(uint64_t *)ret->data = *(uint8_t  *)data;           break;
+   case shlib_UINT16_T:    *(uint64_t *)ret->data = *(uint16_t *)data;           break;
+   case shlib_UINT32_T:    *(uint64_t *)ret->data = *(uint32_t *)data;           break;
+   case shlib_UINT64_T:    *(uint64_t *)ret->data = *(uint64_t *)data;           break;
+   case shlib_INT8_T:      *(int64_t  *)ret->data = *(int8_t   *)data;           break;
+   case shlib_INT16_T:     *(int64_t  *)ret->data = *(int16_t  *)data;           break;
+   case shlib_INT32_T:     *(int64_t  *)ret->data = *(int32_t  *)data;           break;
+   case shlib_INT64_T:     *(int64_t  *)ret->data = *(int64_t  *)data;           break;
+   case shlib_FLOAT:       *(float    *)ret->data = *(float    *)data;           break;
+   case shlib_DOUBLE:      *(double   *)ret->data = *(double   *)data;           break;
+   case shlib_SIZE_T:      *(uint64_t *)ret->data = *(size_t   *)data;           break;
+   case shlib_S_CHAR:      *(int64_t  *)ret->data = *(signed char        *)data; break;
+   case shlib_S_SHORT:     *(int64_t  *)ret->data = *(signed short       *)data; break;
+   case shlib_S_INT:       *(int64_t  *)ret->data = *(signed int         *)data; break;
+   case shlib_S_LONG:      *(int64_t  *)ret->data = *(signed long        *)data; break;
+   case shlib_S_LONG_LONG: *(int64_t  *)ret->data = *(signed long long   *)data; break;
+   case shlib_U_CHAR:      *(uint64_t *)ret->data = *(unsigned char      *)data; break;
+   case shlib_U_SHORT:     *(uint64_t *)ret->data = *(unsigned short     *)data; break;
+   case shlib_U_INT:       *(uint64_t *)ret->data = *(unsigned int       *)data; break;
+   case shlib_U_LONG:      *(uint64_t *)ret->data = *(unsigned long      *)data; break;
+   case shlib_U_LONG_LONG: *(uint64_t *)ret->data = *(unsigned long long *)data; break;
+   case shlib_POINTER:     ret->data = data;                                     break;
+   }
+
+   if (type==shlib_DOUBLE)
+      ret->type = atom_FLOAT;
+
+   if (type==shlib_POINTER)
+      ret->type = atom_FFI;
+
+   return ret;
+}
+
+static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
+                                         const atom_t **args, size_t nargs)
+{
+   bool error = true;
+   atom_t *ret = NULL;
+   atom_t *trap = NULL;
+
+   atom_t *eval_args = atom_list_new ();
+
+   struct shlib_pair_t *fargs = NULL;
+   void *return_value = NULL;
+   shlib_type_t return_type;
+
+   const atom_t *fspec = args[0];
+   const atom_t *library = atom_list_index (fspec, 0);
+   const atom_t *func = atom_list_index (fspec, 1);
+   const atom_t *ret_type = atom_list_index (fspec, 2);
+
+   const atom_t **args_found = &args[1];
+   const atom_t **args_expected = (atom_list_index (fspec, 3));
+
+   atom_t *tmp_rt = rt_eval (rt, sym, ret_type);
+
+   if (!eval_args)
+      goto errorexit;
+
+   return_type = promote_atom_to_native_type (tmp_rt);
+   atom_del (tmp_rt);
+
+   return_value = malloc (8);
+   if (!return_value) {
+      fprintf (stderr, "OOM\n");
+      goto errorexit;
+   }
+   memset (return_value, 0, 8);
+
+   size_t nargs_found = nargs - 1;
+   size_t nargs_expected = atom_list_length (atom_list_index (fspec, 3));
+
+   if (nargs_found != nargs_expected) {
+      char tmp1[38];
+      sprintf (tmp1, "nargs wrong: %zu/%zu", nargs_found, nargs_expected);
+      trap = rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         atom_new (atom_STRING, tmp1),
+                                         NULL);
+      goto errorexit;
+   }
+
+   fargs = malloc ((sizeof *fargs) * (nargs_found + 1));
+   if (!fargs) {
+      fprintf (stderr, "OOM\n");
+      goto errorexit;
+   }
+
+   memset (fargs, 0, (sizeof *fargs) * (nargs_found + 1));
+
+   for (size_t i=1; args[i]; i++) {
+      const atom_t *arg_found = rt_eval (rt, sym, args_found[i - 1]);
+      const atom_t *arg_expected =
+                     atom_list_index ((atom_t *)args_expected, i - 1);
+
+      atom_t *tmp_expected = rt_eval (rt, sym, arg_expected);
+
+      if (check_type_compatible (arg_found, tmp_expected)!=true) {
+         trap = rt_trap (rt, (atom_t *)sym,
+                             atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                             atom_new (atom_STRING, "Arg mismatch"),
+                             atom_dup (arg_found),
+                             atom_dup (arg_expected),
+                             NULL);
+         atom_del (tmp_expected);
+         goto errorexit;
+      }
+
+      fargs[i-1].type = *(int64_t *)tmp_expected->data;
+      atom_del (tmp_expected);
+
+      if (fargs[i-1].type==shlib_NONE) {
+         trap = rt_trap (rt, (atom_t *)sym,
+                             atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                             atom_dup (arg_found),
+                             NULL);
+         goto errorexit;
+      }
+
+      fargs[i-1].data = promote_atom_to_native_data (arg_found, fargs[i-1].type);
+
+      atom_list_ins_tail (eval_args, arg_found);
+   }
+
+   int errcode = shlib_funcall (rt->shlib, atom_to_string (func),
+                                           (char *)(library->data),
+                                           return_type,
+                                           return_value,
+                                           fargs);
+
+   if (errcode) {
+      trap = rt_trap (rt, (atom_t *)sym,
+                          atom_new (atom_SYMBOL, "TRAP_FFI"),
+                          atom_dup (atom_list_index (fspec, 0)),
+                          atom_dup (atom_list_index (fspec, 1)),
+                          NULL);
+      goto errorexit;
+   }
+
+   if (!(ret = promote_native_to_atom (return_type, return_value)))
+      goto errorexit;
+
+   error = false;
+
+errorexit:
+
+   atom_del (eval_args);
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
+
+   if (trap) {
+      ret = trap;
+   }
+
+   for (size_t i=0; fargs[i].type; i++) {
+      if (fargs[i].type==shlib_POINTER)
+         continue;
+
+      free ((void *)fargs[i].data);
+   }
+   free (fargs);
+
+   free (return_value);
+
+   return ret;
 }
 
 static atom_t *rt_funcall_interp (rt_t *rt, const atom_t *sym,
@@ -520,22 +878,21 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
       goto errorexit;
    }
 
-   switch (func->type) {
-      case atom_FFI:
-         // TODO: Implement FFI
-         break;
+   if (func->type == atom_NATIVE) {
 
-      case atom_NATIVE:
-         ret = rt_funcall_native (rt, sym, (const atom_t **)args, --nargs);
-         break;
+      ret = rt_funcall_native (rt, sym, (const atom_t **)args, --nargs);
 
-      default:
-         ret = func->flags == ATOM_FLAG_FUNC ?
-               rt_funcall_interp (rt, sym, (const atom_t **)args, --nargs) :
-               NULL;
+   } else {
 
-         if (ret) ret->flags = 0;
-         break;
+      ret = NULL;
+
+      if (func->flags & ATOM_FLAG_FUNC)
+         ret = rt_funcall_interp (rt, sym, (const atom_t **)args, --nargs);
+
+      if (func->flags & ATOM_FLAG_FFI)
+         ret = rt_funcall_ffi (rt, sym, (const atom_t **)args, nargs);
+
+      if (ret) ret->flags = 0;
    }
 
    atom_list_remove_tail (rt->stack);
@@ -560,7 +917,6 @@ errorexit:
 
 atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
 {
-   bool error = true;
    atom_t *tmp = NULL;
 
    switch (atom->type) {
@@ -583,22 +939,14 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    if (!tmp) {
       fprintf (stderr, "Eval failed [%p:%s]\n", atom, atom_to_string (atom));
       atom_print (atom, 0, stderr);
-      tmp  = rt_trap (rt, sym, atom_new (atom_SYMBOL, "TRAP_EVALERR"),
-                               atom_dup (atom), NULL);
+      tmp  = rt_trap (rt, (atom_t *)sym,
+                          atom_new (atom_SYMBOL, "TRAP_EVALERR"),
+                          atom_dup (atom), NULL);
    }
 
    if (!tmp) {
       fprintf (stderr, "Unhandled trap [TRAP_EVALERR], aborting\n");
       exit (-1);
-   }
-
-   error = false;
-
-errorexit:
-
-   if (error) {
-      atom_del (tmp);
-      tmp = NULL;
    }
 
    return tmp;

@@ -619,6 +619,26 @@ atom_t *builtins_DEFUN (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
    return ret;
 }
 
+atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   if (nargs!=2) {
+      return rt_trap (rt, sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+   }
+
+   atom_t *tmp = (atom_t *)args[0];
+   tmp->flags |= ATOM_FLAG_FFI;
+
+   tmp = (atom_t *)args[1];
+   tmp->flags |= ATOM_FLAG_FFI;
+
+   tmp = atom_list_index (args[1], 0);
+   tmp->flags |= ATOM_FLAG_FFI;
+
+   atom_t *ret = atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
+
+   return ret;
+}
+
 atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    atom_t *tmpsym = NULL,
