@@ -5,7 +5,7 @@ and data structures in a way that interfaces easily to the `C` programming
 language.
 
 You don't want to use this language - it's a work-in-progress and not
-yet fit to use. You are encouraged to use one of  the alternatives listed
+yet fit to use. You are encouraged to use one of the alternatives listed
 below.
 
 ## Alternatives
@@ -58,7 +58,9 @@ about each alternative with a brief search on the internet:
    script; this makes interfacing to `C` a walk-in-the-park when compared
    to the interfacing requirements of the other scripting languages.
 
-   The downside is that you'll have to learn lisp.
+   The downside is that you'll have to learn `Lisp` (come to think of it,
+   you'll learn `Lisp` anyway, when it's disguised as an imperative
+   language).
 
 1. `CINT` is a `C` interpreter. This means that your scripting language
    is the same language as your host language (either `C` or `C++`).
@@ -92,8 +94,7 @@ Right now scripts are written in a lisp-ish syntax. The actual syntax is
 not going to change. The interpreter (embedded into the application) will
 allow scripts to:
 1. Call the built in functions (there is no documentation on this yet),
-1. Evaluate using the built-in operators (arithmetic only, for now), with
-   plans to add in the boolean operators in the future,
+1. Evaluate using the built-in operators (arithmetic, boolean, bitwise),
 1. Define global variables using a 'define' built-in function,
 1. Create local variables with a 'let' built-in function,
 1. Create functions, and then store them as a global symbol (this means
@@ -104,17 +105,40 @@ allow scripts to:
 1. Set, clear and generate traps for error conditions,
 1. Invoke the built-in debugger to examine program state when a trap is
    unhandled.
+1. Call functions in external library.dll or library.so files, subject to
+   some restrictions (for example, cannot pass arbitrary-length buffers to
+   the external functions, such as `fread`).
 
 Admittedly that's not an impressive list of capabilities, but I did warn
 you to use something else!
 
-Future plans include scripts being able to load libraries and execute
-functions within them (.so and .dll files), and allow the host/caller
-program to locate functions within the runtime and evaluate them.
-
 Right now, I'm just trying to get to a point where the script can define
-functions compatible with `C` structs, and of course implement the missing
-operators.
+functions compatible with `C` structs and have enough runtime support to
+define arbitrarily large buffers that many of the `C` standard functions
+use (`fread`, `fwrite`, etc).
+
+## Missing capabilities... coming soon<sup>(tm)</sup>
+This project is now only a few weeks old, and as such is missing a bunch
+of critical functionality. I'd advise going with an alternative.
+
+Nevertheless, if you do find yourself messing with this here's what you
+are not going to find (yet):
+1. Looping capability (can be faked with recursion if primitives `first`
+   and `rest` existed),
+1. Primitives to enable recursing across a list (superfluous if looping
+   constructs existed),
+1. Creating byte-buffers needed for interfacing to many `C` libraries,
+1. Defining `C` style `structs` so that the scripts can interface to many
+   `C` libraries that take structures,
+1. A garbage collection strategy. Currently there is no need for one as
+   the script executes strictly top-down in the tree, and each return from
+   an expression cleans up after itself,
+1. Trapping based on signals (SIGSEGV, SIGBUS, etc). While the script
+   cannot recover from such a thing, it can dump the runtime and
+   call-stack before ending.
+
+I do not know when any of the above will be finished, or even started.
+Don't hold your breath.
 
 ## Licence
 ```
