@@ -480,7 +480,7 @@ atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_
       fprintf (stderr, "--------------------------------------\n");
       fprintf (stderr, "Too many arguments for DEFINE (found %zu). Possible "
                        "unterminated list.\n", nargs);
-      return rt_trap_a (rt, sym,
+      return rt_trap_a (rt, (atom_t *)sym,
                             atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
                             atom_array_dup (args));
    }
@@ -622,7 +622,7 @@ atom_t *builtins_DEFUN (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
 atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    if (nargs!=2) {
-      return rt_trap (rt, sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
    }
 
    atom_t *tmp = (atom_t *)args[0];
@@ -631,7 +631,7 @@ atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_
    tmp = (atom_t *)args[1];
    tmp->flags |= ATOM_FLAG_FFI;
 
-   tmp = atom_list_index (args[1], 0);
+   tmp = (atom_t *)atom_list_index (args[1], 0);
    tmp->flags |= ATOM_FLAG_FFI;
 
    atom_t *ret = atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
@@ -836,7 +836,6 @@ static atom_t *builtins_opbits (rt_t *rt, const atom_t *sym,
 {
    bool error = true;
    atom_t *ret = NULL;
-   bool used_float = false;
 
    nargs = nargs;
    rt = rt;

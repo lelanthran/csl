@@ -80,8 +80,6 @@ token_t **token_read_file (const char *fname)
    char *input = NULL;
    token_t **ret = NULL;
 
-   size_t line = 0, charpos = 0;
-
    if (!(input = xstr_readfile (fname))) {
       XERROR ("Unable to read [%s]: %m\n", fname);
       return NULL;
@@ -217,7 +215,7 @@ token_t **token_read_string (char **input, const char *fname)
    token_t **ret = NULL;
    token_t *token = NULL;
 
-   if (!(ret = ll_new ()))
+   if (!(ret = (token_t **)ll_new ()))
       return NULL;
 
    size_t line = 0, charpos = 0;

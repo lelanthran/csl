@@ -14,8 +14,6 @@ int main (void)
 {
    int ret = EXIT_FAILURE;
 
-   atom_t **atoms = NULL;
-
    token_t **tokens = token_read_file (TESTFILE);
    if (!tokens) {
       XERROR ("Unable to read tokens from [%s]\n", TESTFILE);

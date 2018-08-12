@@ -283,7 +283,7 @@ static const atom_t *rt_add_native_type (rt_t *rt,
    atom_t *sym = atom_new (atom_SYMBOL, name);
    atom_t *val = atom_new (atom_INT, tmp);
 
-   atom_t *ret = rt_symbol_add (rt->symbols, sym, val);
+   const atom_t *ret = rt_symbol_add (rt->symbols, sym, val);
 
    atom_del (sym);
    atom_del (val);
@@ -556,14 +556,6 @@ static shlib_type_t promote_atom_to_native_type (const atom_t *src)
    return 0;
 }
 
-static void dumphex (uint8_t *buffer, size_t len)
-{
-   while (len--) {
-      printf ("0x%02x-",  *buffer++);
-   }
-   printf ("\n");
-}
-
 static void *promote_atom_to_native_data (const atom_t *src,
                                                 shlib_type_t type)
 {
@@ -597,7 +589,7 @@ static void *promote_atom_to_native_data (const atom_t *src,
    case shlib_U_INT:       *(unsigned int *)ret = *(int64_t *)src->data;       break;
    case shlib_U_LONG:      *(unsigned long *)ret = *(int64_t *)src->data;      break;
    case shlib_U_LONG_LONG: *(unsigned long long *)ret = *(int64_t *)src->data; break;
-   case shlib_POINTER:     free (ret); ret = &src->data;                       break;
+   case shlib_POINTER:     free (ret); ret = (void *)&src->data;                       break;
    }
 
    if (type==shlib_FLOAT) {
@@ -681,7 +673,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
    const atom_t *ret_type = atom_list_index (fspec, 2);
 
    const atom_t **args_found = &args[1];
-   const atom_t **args_expected = (atom_list_index (fspec, 3));
+   const atom_t *args_expected = (atom_list_index (fspec, 3));
 
    atom_t *tmp_rt = rt_eval (rt, sym, ret_type);
 
@@ -749,7 +741,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
 
       fargs[i-1].data = promote_atom_to_native_data (arg_found, fargs[i-1].type);
 
-      atom_list_ins_tail (eval_args, arg_found);
+      atom_list_ins_tail (eval_args, (atom_t *)arg_found);
    }
 
    int errcode = shlib_funcall (rt->shlib, atom_to_string (func),

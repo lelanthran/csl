@@ -255,37 +255,6 @@ static const struct {
    { shlib_POINTER,     sizeof (void *)               },
 };
 
-void *get_ffi_value (struct shlib_pair_t *pair)
-{
-   void *ret = NULL;
-
-   if (!pair)
-      return NULL;
-
-   size_t len = 0;
-   for (size_t i=0; i<sizeof g_typelen/sizeof g_typelen[0]; i++) {
-      if (g_typelen[i].type == pair->type) {
-         len = g_typelen[i].len;
-         break;
-      }
-   }
-
-   if (!len)
-      return NULL;
-
-   if (!(ret = malloc (len)))
-      return NULL;
-
-   if (pair->type!=shlib_POINTER) {
-      memcpy (ret, pair->data, len);
-   } else {
-      free (ret);
-      ret = pair->data;
-   }
-
-   return ret;
-}
-
 int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
                    shlib_type_t return_type, void *return_value,
                    struct shlib_pair_t *args)
@@ -322,7 +291,7 @@ int shlib_funcall (shlib_t *shlib, const char *func, const char *lib,
 
    for (size_t i=0; args[i].type!=0; i++) {
       arg_types[i] = get_ffi_type (args[i].type);
-      arg_values[i] = args[i].data;
+      arg_values[i] = (void *)args[i].data;
    }
 
    ffi_status ffi_sc = ffi_prep_cif (&cif, FFI_DEFAULT_ABI,

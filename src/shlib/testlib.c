@@ -28,8 +28,8 @@ uint64_t testlib_big (char *str,
    uint64_t ret = 0xb1b2b3b4b5b6b7b8L;
    printf ("In [%s]\n", __func__);
    printf ("str:     [%s]\n", str);
-   printf ("i8:      [%x]\n", i8);
-   printf ("i64:     [%" PRIx64 "]\n", i64);
+   printf ("i8:      [0x%x]\n", i8);
+   printf ("i64:     [0x%" PRIx64 "]\n", i64);
    printf ("d64:     [%f]\n", d64);
    printf ("f32:     [%f]\n", f32);
 
