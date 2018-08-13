@@ -31,6 +31,7 @@ static atom_t *rparser (token_t **tokens, size_t *index)
       case token_OPERATOR: type = atom_SYMBOL;  break;
       case token_QUOTE:    type = atom_QUOTE;   break;
       case token_STRING:   type = atom_STRING;  break;
+      case token_NIL:      type = atom_NIL;     break;
 
       case token_STARTL:   type = atom_LIST;    break;
       case token_ENDL:     type = atom_ENDL;    break;

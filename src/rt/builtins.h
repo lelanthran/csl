@@ -17,6 +17,10 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
 atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 atom_t *builtins_LIST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_FIRST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_REST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_LENGTH (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+
 atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);

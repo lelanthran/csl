@@ -1,4 +1,5 @@
 
+
 (bi_list "two three"
    (bi_list "next" 4 5.5)
    "more items"
@@ -175,4 +176,22 @@
           (/ 10.0 3.0)
           (/ 25.0 2.0))
 
+; Iterate across a list
+(bi_defun 'print_list '(mylist)
+   '(bi_print "Start of PRINT\\n" (bi_first mylist)
+      (if (> (bi_length mylist) 0)
+         '(print_list (bi_rest mylist))
+         '(bi_print "End of PRINT\\n"))))
 
+; (bi_first (bi_rest (bi_list "one" "two" "three")))
+; (bi_print "one" "two" "three")
+
+
+(print_list (bi_list "one" "two" "three"))
+
+nil
+nil
+nil
+nil
+nil
+nil

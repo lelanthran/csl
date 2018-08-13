@@ -415,6 +415,80 @@ errorexit:
    return ret;
 }
 
+atom_t *builtins_FIRST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   nargs = nargs;
+   if (args[1]) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         atom_new (atom_STRING, __func__),
+                                         atom_new (atom_STRING, "Only one param allowed."),
+                                         atom_new (atom_STRING, "Following param is extra."),
+                                         atom_dup (args[1]),
+                                         NULL);
+   }
+
+   return args[0]->type == atom_NIL ?
+                           NULL :
+                           atom_dup (atom_list_index (args[0], 0));
+}
+
+atom_t *builtins_REST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   nargs = nargs;
+   if (args[1]) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         atom_new (atom_STRING, __func__),
+                                         atom_new (atom_STRING, "Only one param allowed."),
+                                         atom_new (atom_STRING, "Following param is extra."),
+                                         atom_dup (args[1]),
+                                         NULL);
+   }
+
+   size_t len = atom_list_length (args[0]);
+
+   if (len == 0) {
+      return atom_new (atom_NIL, NULL);
+   }
+
+   atom_t *ret = atom_list_new ();
+   if (!ret) {
+      fprintf (stderr, "OOM\n");
+      return NULL;
+   }
+
+   for (size_t i=1; i<len; i++) {
+      atom_list_ins_tail (ret, atom_dup (atom_list_index (args[0], i)));
+   }
+
+   return ret;
+}
+
+atom_t *builtins_LENGTH (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   nargs = nargs;
+   if (args[1]) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         atom_new (atom_STRING, __func__),
+                                         atom_new (atom_STRING, "Only one param allowed."),
+                                         atom_new (atom_STRING, "Following param is extra."),
+                                         atom_dup (args[1]),
+                                         NULL);
+   }
+
+   int64_t len = atom_list_length (args[0]);
+   atom_t *ret = atom_new (atom_NIL, NULL);
+   ret->type = atom_INT;
+   *(int64_t *)ret->data = len;
+
+   return ret;
+}
+
 atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    bool error = true;

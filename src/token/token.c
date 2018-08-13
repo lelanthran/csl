@@ -29,11 +29,12 @@ static enum token_type_t guess_type (const char *str)
    if (!str || !*str)
       return token_UNKNOWN;
 
-   if (str[0] == '(')         return token_STARTL;
-   if (str[0] == '\'')        return token_QUOTE;
-   if (str[0] == ')')         return token_ENDL;
-   if (str[0] == '"')         return token_STRING;
-   if (is_operator (str[0]))  return token_OPERATOR;
+   if (strcmp (str, "nil")==0)   return token_NIL;
+   if (str[0] == '(')            return token_STARTL;
+   if (str[0] == '\'')           return token_QUOTE;
+   if (str[0] == ')')            return token_ENDL;
+   if (str[0] == '"')            return token_STRING;
+   if (is_operator (str[0]))     return token_OPERATOR;
    enum token_type_t type = token_SYMBOL;
    if (isdigit (str[0]))
       type = token_INT;

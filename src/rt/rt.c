@@ -296,6 +296,10 @@ static struct {
    rt_builtins_fptr_t *fptr;
 } g_native_funcs[] = {
    {  "bi_list",        builtins_LIST        },
+   {  "bi_first",       builtins_FIRST       },
+   {  "bi_rest",        builtins_REST        },
+   {  "bi_length",      builtins_LENGTH      },
+
    {  "bi_nappend",     builtins_NAPPEND     },
    {  "bi_set",         builtins_SET         },
    {  "bi_define",      builtins_DEFINE      },
@@ -890,10 +894,7 @@ static atom_t *rt_list_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
    atom_list_remove_tail (rt->stack);
 
    if (!ret) {
-      ret = atom_list_new ();
-      for (size_t i=0; i<nargs; i++) {
-         atom_list_ins_tail (ret, atom_dup (ll_index (args, i)));
-      }
+      ret = atom_new (atom_NIL, NULL);
    }
 
 errorexit:

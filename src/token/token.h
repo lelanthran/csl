@@ -17,6 +17,7 @@ enum token_type_t {
    token_INT,
    token_FLOAT,
    token_SYMBOL,
+   token_NIL,
    token_OPERATOR
 };
 
