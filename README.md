@@ -1,12 +1,12 @@
 # C Scripting Language
 ## What is `CSL`?
-`CSL` is a simple lisp-like language for scripting high-level logic
+`CSL` is a simple lisp-like macro language for scripting high-level logic
 and data structures in a way that interfaces easily to the `C` programming
 language.
 
 You don't want to use this language - it's a work-in-progress and not
-yet fit to use. You are encouraged to use one of the alternatives listed
-below.
+yet fit to use. You are encouraged to use one of the many alternatives,
+a few of which are listed below.
 
 ## Alternatives
 If you really were looking for a scripting language for your `C` programs
@@ -119,7 +119,7 @@ use (`fread`, `fwrite`, etc).
 
 ## Missing capabilities... coming soon<sup>(tm)</sup>
 This project is now only a few weeks old, and as such is missing a bunch
-of critical functionality. I'd advise going with an alternative.
+of critical functionality. I'd advise (again) going with an alternative.
 
 Nevertheless, if you do find yourself messing with this here's what you
 are not going to find (yet):
