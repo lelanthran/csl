@@ -321,7 +321,8 @@ static struct {
    {  ">=",             builtins_GE          },
    {  "=",              builtins_EQ          },
 
-   {  "if",             builtins_IF          },
+   {  "bi_if",          builtins_IF          },
+   {  "bi_while",       builtins_WHILE       },
 
    {  "+",              builtins_PLUS        },
    {  "-",              builtins_MINUS       },

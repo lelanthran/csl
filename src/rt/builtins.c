@@ -1042,3 +1042,44 @@ atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t na
    return NULL;
 }
 
+atom_t *builtins_WHILE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   if (nargs < 3) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         atom_new (atom_STRING, __func__),
+                                         atom_new (atom_STRING, "Three params only allowed."),
+                                         NULL);
+   }
+
+   atom_t *expr_test = args[0],
+          *body = args[1],
+          *post_loop = args[2];
+
+   atom_t *ret = atom_new (atom_NIL, NULL);
+
+   do {
+      atom_t *tmp = rt_eval (rt, sym, expr_test);
+      int64_t expr_val = tmp ? *(int64_t *)tmp->data : 0;
+
+      atom_del (tmp);
+      if (expr_val==0) {
+         break;
+      }
+
+      atom_del (ret);
+      ret = rt_eval (rt, sym, body);
+      if (!ret)
+         break;
+
+      tmp = rt_eval (rt, sym, post_loop);
+      if (!tmp) {
+         atom_del (ret);
+         ret = NULL;
+         break;
+      }
+
+      atom_del (tmp);
+   } while (1);
+
+   return ret;
+}

@@ -64,6 +64,7 @@ atom_t *builtins_LOG_NOT (rt_t *rt, const atom_t *sym, const atom_t **args, size
 
 
 atom_t *builtins_IF (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_WHILE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 #ifdef __cplusplus
 };

@@ -538,13 +538,18 @@ void atom_print (const atom_t *atom, size_t depth, FILE *outf)
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
 
    if (funcs && funcs->prn_fptr) {
+#if 0 // This is irritating, taking it out for now
       if (atom->buffer[0]) {
          fprintf (outf, "[%s ", atom->buffer);
       }
+#endif
       funcs->prn_fptr (atom, depth, outf);
+#if 0 // This is irritating, taking it out for now
       if (atom->buffer[0]) {
          fprintf (outf, "] ");
       }
+#endif
+
       // print_depth (depth, outf);
       // fprintf (outf, "   Flags: [0x%02x]\n", atom->flags);
    }
