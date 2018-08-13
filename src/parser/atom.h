@@ -35,7 +35,7 @@ struct atom_t {
    void *data;
 
    // Reserved for internal use, do not access
-   char buffer[18];
+   char buffer[48];
    uint8_t flags;
 };
 

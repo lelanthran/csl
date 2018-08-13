@@ -412,6 +412,7 @@ atom_t *atom_dup (const atom_t *atom)
    if (!(ret = calloc (1, sizeof *ret)))
       goto errorexit;
 
+   memcpy (ret->buffer, atom->buffer, sizeof ret->buffer);
    if (funcs->dup_fptr && !(funcs->dup_fptr (ret, atom)))
       goto errorexit;
 
@@ -537,7 +538,13 @@ void atom_print (const atom_t *atom, size_t depth, FILE *outf)
    const atom_dispatch_t *funcs = atom_find_funcs (atom->type);
 
    if (funcs && funcs->prn_fptr) {
+      if (atom->buffer[0]) {
+         fprintf (outf, "[%s ", atom->buffer);
+      }
       funcs->prn_fptr (atom, depth, outf);
+      if (atom->buffer[0]) {
+         fprintf (outf, "] ");
+      }
       // print_depth (depth, outf);
       // fprintf (outf, "   Flags: [0x%02x]\n", atom->flags);
    }

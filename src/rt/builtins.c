@@ -378,7 +378,7 @@ atom_t *builtins_TRAP_DFL (rt_t *rt, const atom_t *sym, const atom_t **args, siz
    atom_print (sym, 0, stderr);
    rt_print (rt, stderr);
 
-   fprintf (stderr, "Default trap handler in '");
+   fprintf (stderr, "Default trap handler in:\n");
    for (size_t i=0; args[i]; i++) {
       atom_print (args[i], 0, stderr);
    }

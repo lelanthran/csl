@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <string.h>
 
 
 #include "parser/parser.h"
@@ -50,6 +51,12 @@ static atom_t *rparser (token_t **tokens, size_t *index)
    if (!(ret = atom_new (type, string))) {
       return NULL;
    }
+
+   memset (ret->buffer, 0, sizeof ret->buffer);
+   snprintf (ret->buffer, sizeof ret->buffer -1, "%s:%zu:%zu",
+                          token_fname (tokens[(*index)]),
+                          token_line (tokens[(*index)]),
+                          token_charpos (tokens[(*index)]));
 
    if (type==atom_LIST) {
       atom_t *child;
