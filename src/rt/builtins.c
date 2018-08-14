@@ -707,14 +707,13 @@ atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
       atom_del (val);
    }
 
-   atom_t *symbols = sym ? atom_concatenate (sym, args[0], NULL)
+   atom_t *symbols = sym ? atom_concatenate (sym, locals, NULL)
                          : atom_dup (locals);
 
    atom_t *ret = NULL;
 
    for (size_t i=1; args[i]; i++) {
       atom_del (ret); ret = NULL;
-      atom_print (args[i], 0, stdout);
       ret = rt_eval (rt, symbols, args[i]);
    }
 
