@@ -546,7 +546,8 @@ atom_t *builtins_NFREE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
                             atom_array_dup (args));
    }
 
-   atom_del (args[0]);
+#warning TODO: We need a better way than this
+   atom_del ((atom_t *)args[0]);
 
    return atom_new (atom_NIL, NULL);
 }
@@ -690,8 +691,8 @@ atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
       atom_t *entry = atom_list_new ();
       if (!entry)
          return NULL;
-      atom_t *existing = atom_list_index (args[0], i);
-      atom_t *symbol = atom_list_index (existing, 0);
+      atom_t *existing = (atom_t *)atom_list_index (args[0], i);
+      atom_t *symbol = (atom_t *)atom_list_index (existing, 0);
       atom_t *val = rt_eval (rt, sym, atom_list_index (existing, 1));
 
       if (!(atom_list_ins_tail (entry, atom_dup (symbol))))
@@ -776,6 +777,18 @@ atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_
    atom_t *ret = atom_dup (rt_symbol_add (rt->symbols, args[0], args[1]));
 
    return ret;
+}
+
+atom_t *builtins_DEFSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   args = args;
+   nargs = nargs;
+
+   // TODO:
+#warning TODO: This is not yet implemented.
+   return NULL;
 }
 
 atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
@@ -1116,9 +1129,9 @@ atom_t *builtins_WHILE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
                                          NULL);
    }
 
-   atom_t *expr_test = args[0],
-          *body = args[1],
-          *post_loop = args[2];
+   const atom_t *expr_test = args[0],
+                *body = args[1],
+                *post_loop = args[2];
 
    atom_t *ret = atom_new (atom_NIL, NULL);
 

@@ -50,8 +50,8 @@ extern "C" {
    atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap);
    atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...);
 
-   void rt_warn_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap);
-   void rt_warn (rt_t *rt, atom_t *sym, atom_t *warning, ...);
+   void rt_warn_v (rt_t *rt, const atom_t *sym, atom_t *trap, va_list ap);
+   void rt_warn (rt_t *rt, const atom_t *sym, atom_t *warning, ...);
 
    atom_t *rt_eval (rt_t *rt, const atom_t *symbols, const atom_t *atom);
 

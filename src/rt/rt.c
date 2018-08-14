@@ -235,8 +235,11 @@ atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...)
    return ret;
 }
 
-void rt_warn_v (rt_t *rt, atom_t *sym, atom_t *warning, va_list ap)
+void rt_warn_v (rt_t *rt, const atom_t *sym, atom_t *warning, va_list ap)
 {
+   rt = rt;
+   sym = sym;
+
    atom_t *arg = warning;
 
    fprintf (stderr, "WARNING: [%s]\n", atom_to_string (warning));
@@ -247,7 +250,7 @@ void rt_warn_v (rt_t *rt, atom_t *sym, atom_t *warning, va_list ap)
    }
 }
 
-void rt_warn (rt_t *rt, atom_t *sym, atom_t *warning, ...)
+void rt_warn (rt_t *rt, const atom_t *sym, atom_t *warning, ...)
 {
    va_list ap;
 
@@ -338,6 +341,7 @@ static struct {
    {  "bi_let",         builtins_LET         },
    {  "bi_defun",       builtins_DEFUN       },
    {  "bi_defext",      builtins_DEFEXT      },
+   {  "bi_defstruct",   builtins_DEFSTRUCT   },
    {  "bi_funcall",     builtins_FUNCALL     },
    {  "bi_trap_set",    builtins_TRAP_SET    },
    {  "bi_trap_clear",  builtins_TRAP_CLEAR  },
@@ -947,6 +951,7 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
       case atom_STRING:
       case atom_INT:
       case atom_QUOTE:
+      case atom_BUFFER:
       case atom_FLOAT:  tmp = atom_dup (atom);                           break;
 
       case atom_SYMBOL: tmp = atom_dup (rt_eval_symbol (rt, sym, atom)); break;
