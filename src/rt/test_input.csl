@@ -1,6 +1,6 @@
 
 (bi_let '((i 0))
-   '(bi_while (< i 10)
-              (bi_print (+ i 5))
-              (bi_set 'i (+ i 1))))
+   '(bi_while '(< i 10)
+              '(bi_print "Printing ..." (+ i 5))
+              '(bi_set 'i (+ i 1))))
 
