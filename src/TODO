@@ -54,3 +54,8 @@
 
 12. Need easy way to define structs/types for ffi.
 
+13. Complete the byte-buffer implementation so that native C functions an
+   use it.
+
+14. Check that quotes themselves can be quoted (is this even necessary?)
+
