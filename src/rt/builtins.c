@@ -12,6 +12,8 @@
 
 #include "xstring/xstring.h"
 
+#define WEXPECTED_LIST  ("Expected list expression")
+
 atom_t *builtins_TRAP_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
@@ -1056,6 +1058,21 @@ atom_t *builtins_WHILE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
           *post_loop = args[2];
 
    atom_t *ret = atom_new (atom_NIL, NULL);
+
+   if (expr_test->type!=atom_LIST) {
+      rt_warn (rt, sym, atom_new (atom_STRING, WEXPECTED_LIST),
+                        atom_dup (expr_test), NULL);
+   }
+
+   if (body->type!=atom_LIST) {
+      rt_warn (rt, sym, atom_new (atom_STRING, WEXPECTED_LIST),
+                        atom_dup (body), NULL);
+   }
+
+   if (post_loop->type!=atom_LIST) {
+      rt_warn (rt, sym, atom_new (atom_STRING, WEXPECTED_LIST),
+                        atom_dup (post_loop), NULL);
+   }
 
    do {
       atom_t *tmp = rt_eval (rt, sym, expr_test);

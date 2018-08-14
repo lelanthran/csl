@@ -235,6 +235,31 @@ atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...)
    return ret;
 }
 
+void rt_warn_v (rt_t *rt, atom_t *sym, atom_t *warning, va_list ap)
+{
+   atom_t *arg = warning;
+
+   fprintf (stderr, "WARNING: [%s]\n", atom_to_string (warning));
+   atom_del (warning);
+   while ((arg = va_arg (ap, atom_t *))!=NULL) {
+      atom_print (arg, 0, stderr);
+      atom_del (arg);
+   }
+}
+
+void rt_warn (rt_t *rt, atom_t *sym, atom_t *warning, ...)
+{
+   va_list ap;
+
+   va_start (ap, warning);
+
+   rt_warn_v (rt, sym, warning, ap);
+
+   va_end (ap);
+
+}
+
+
 static const struct {
    shlib_type_t type;
    const char *name;
