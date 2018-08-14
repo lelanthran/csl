@@ -742,6 +742,37 @@ atom_t *atom_float_new (double d)
    return atom_new (atom_FLOAT, tmps);
 }
 
+atom_t *atom_buffer_new (void *buf, size_t len)
+{
+   if (len==0)
+      return NULL;
+
+   atom_t *ret = malloc (sizeof *ret);
+   if (!ret)
+      return NULL;
+
+   memset (ret, 0, sizeof *ret);
+
+   ret->type = atom_BUFFER;
+   ret->data = malloc (len + sizeof len);
+
+   if (!ret->data) {
+      free (ret);
+      return NULL;
+   }
+
+   *(size_t *)ret->data = len;
+   uint8_t *b = ret->data;
+   b = &b[sizeof len];
+
+   if (buf) {
+      memcpy (b, buf, len);
+   } else {
+      memset (b, 0, len);
+   }
+
+   return ret;
+}
 
 const char *atom_to_string (const atom_t *atom)
 {

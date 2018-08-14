@@ -22,6 +22,8 @@ atom_t *builtins_REST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
 atom_t *builtins_LENGTH (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 atom_t *builtins_NAPPEND (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_NALLOC (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_NFREE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);

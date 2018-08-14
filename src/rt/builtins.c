@@ -514,6 +514,43 @@ errorexit:
    return error ? NULL : (atom_t *)args[0];
 }
 
+atom_t *builtins_NALLOC (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   if (nargs!=1) {
+      return rt_trap_a (rt, (atom_t *)sym,
+                            atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            atom_array_dup (args));
+   }
+
+   int64_t tmp = *(int64_t *)args[0]->data;
+   size_t len = tmp;
+
+   return atom_buffer_new (NULL, len);
+}
+
+atom_t *builtins_NFREE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   rt = rt;
+   sym = sym;
+   if (nargs!=1) {
+      return rt_trap_a (rt, (atom_t *)sym,
+                            atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            atom_array_dup (args));
+   }
+
+   if (args[0]->type != atom_BUFFER) {
+      return rt_trap_a (rt, (atom_t *)sym,
+                            atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                            atom_array_dup (args));
+   }
+
+   atom_del (args[0]);
+
+   return atom_new (atom_NIL, NULL);
+}
+
 atom_t *builtins_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    atom_t *ret = NULL;
@@ -644,8 +681,34 @@ atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
 {
    nargs = nargs;
 
+   atom_t *locals = atom_list_new ();
+   if (!locals)
+      return NULL;
+
+   size_t len = atom_list_length (args[0]);
+   for (size_t i=0; i<len; i++) {
+      atom_t *entry = atom_list_new ();
+      if (!entry)
+         return NULL;
+      atom_t *existing = atom_list_index (args[0], i);
+      atom_t *symbol = atom_list_index (existing, 0);
+      atom_t *val = rt_eval (rt, sym, atom_list_index (existing, 1));
+
+      if (!(atom_list_ins_tail (entry, atom_dup (symbol))))
+         return NULL;
+
+      if (!(atom_list_ins_tail (entry, atom_dup (val))))
+         return NULL;
+
+      if (!(atom_list_ins_tail (locals, atom_dup (entry))))
+         return NULL;
+
+      atom_del (entry);
+      atom_del (val);
+   }
+
    atom_t *symbols = sym ? atom_concatenate (sym, args[0], NULL)
-                         : atom_dup (args[0]);
+                         : atom_dup (locals);
 
    atom_t *ret = NULL;
 
@@ -656,6 +719,7 @@ atom_t *builtins_LET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t n
    }
 
    atom_del (symbols);
+   atom_del (locals);
 
    if (!ret) {
       // TODO: issue a trap

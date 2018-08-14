@@ -326,6 +326,9 @@ static struct {
    {  "bi_length",      builtins_LENGTH      },
 
    {  "bi_nappend",     builtins_NAPPEND     },
+   {  "bi_nalloc",      builtins_NALLOC      },
+   {  "bi_nfree",       builtins_NFREE       },
+
    {  "bi_set",         builtins_SET         },
    {  "bi_define",      builtins_DEFINE      },
    {  "bi_undefine",    builtins_UNDEFINE    },
