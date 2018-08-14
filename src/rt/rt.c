@@ -304,14 +304,37 @@ static const atom_t *rt_add_native_type (rt_t *rt,
                                          const char *name,
                                          shlib_type_t type)
 {
-   char tmp[18];
+   bool error = true;
 
-   sprintf (tmp, "%i", type);
+   const atom_t *ret = NULL;
 
    atom_t *sym = atom_new (atom_SYMBOL, name);
-   atom_t *val = atom_new (atom_INT, tmp);
+   atom_t *val = atom_list_new ();
+   if (!val)
+      goto errorexit;
 
-   const atom_t *ret = rt_symbol_add (rt->symbols, sym, val);
+   if ((atom_list_ins_tail (val, atom_int_new (type)))==NULL)
+      goto errorexit;
+
+   if (!(atom_list_ins_tail (val, atom_int_new (shlib_sizeof (type)))))
+      goto errorexit;
+
+   // We put this in twice, sometime in the future I may need to store
+   // alignment separately from size. For now I assume that the alignment
+   // and size are the same.
+   if (!(atom_list_ins_tail (val, atom_int_new (shlib_sizeof (type)))))
+      goto errorexit;
+
+   ret = rt_symbol_add (rt->symbols, sym, val);
+
+   error = false;
+
+errorexit:
+
+   if (error) {
+      atom_del (ret);
+      ret = NULL;
+   }
 
    atom_del (sym);
    atom_del (val);
@@ -712,13 +735,18 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
    const atom_t **args_found = &args[1];
    const atom_t *args_expected = (atom_list_index (fspec, 3));
 
-   atom_t *tmp_rt = rt_eval (rt, sym, ret_type);
+   atom_t *tmp = NULL;
+
+   tmp = rt_eval (rt, sym, ret_type);
+   atom_t *tmp_rt = atom_list_index (tmp, 0);
 
    if (!eval_args)
       goto errorexit;
 
    return_type = promote_atom_to_native_type (tmp_rt);
-   atom_del (tmp_rt);
+   atom_del (tmp);
+   tmp = NULL;
+   tmp_rt = NULL;
 
    return_value = malloc (8);
    if (!return_value) {
@@ -752,7 +780,8 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
       const atom_t *arg_expected =
                      atom_list_index ((atom_t *)args_expected, i - 1);
 
-      atom_t *tmp_expected = rt_eval (rt, sym, arg_expected);
+      tmp = rt_eval (rt, sym, arg_expected);
+      atom_t *tmp_expected = atom_list_index (tmp, 0);
 
       if (check_type_compatible (arg_found, tmp_expected)!=true) {
          trap = rt_trap (rt, (atom_t *)sym,
@@ -766,7 +795,9 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
       }
 
       fargs[i-1].type = *(int64_t *)tmp_expected->data;
-      atom_del (tmp_expected);
+      atom_del (tmp);
+      tmp = NULL;
+      tmp_expected = NULL;
 
       if (fargs[i-1].type==shlib_NONE) {
          trap = rt_trap (rt, (atom_t *)sym,
