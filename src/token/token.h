@@ -10,6 +10,7 @@ typedef struct token_t token_t;
 
 enum token_type_t {
    token_UNKNOWN = 0,
+   token_BUFFER,
    token_STARTL,
    token_QUOTE,
    token_ENDL,

@@ -20,6 +20,7 @@ enum atom_type_t {
    atom_FLOAT,
    atom_NATIVE,
    atom_FFI,
+   atom_BUFFER,
    atom_ENDL
 };
 

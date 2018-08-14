@@ -102,6 +102,32 @@ static atom_t *a_new_fptr (atom_t *dst, const char *str)
    return (sscanf (str, "%p", &dst->data)==1) ? dst : NULL;
 }
 
+static atom_t *a_new_buffer (atom_t *dst, const char *str)
+{
+   size_t nbytes = 0;
+   const char *tmp = &str[1];
+   while (tmp && *tmp && *tmp++!='|') {
+      nbytes++;
+   }
+
+   tmp = &str[1];
+   nbytes /= 2;
+
+   dst->data = malloc (nbytes + sizeof (size_t));
+
+   if (!dst->data)
+      return NULL;
+
+   *(size_t *)dst->data = nbytes;
+   uint8_t *b = dst->data;
+   for (size_t i=sizeof (size_t); i<nbytes + sizeof (size_t); i++) {
+      sscanf (tmp, "%02hhx", &b[i]);
+      tmp += 2;
+   }
+
+   return dst;
+}
+
 
 static void a_del_list (atom_t *atom)
 {
@@ -178,6 +204,20 @@ static void a_pr_ffi (const atom_t *atom, size_t depth, FILE *outf)
 {
    depth = depth;
    fprintf (outf, "ffi[%p]", atom->data);
+}
+
+static void a_pr_buffer (const atom_t *atom, size_t depth, FILE *outf)
+{
+   depth = depth;
+
+   size_t nbytes = *(size_t *)atom->data;
+
+   fprintf (outf, "buf[");
+   uint8_t *b = atom->data;
+   for (size_t i=sizeof (size_t); i<nbytes + sizeof (size_t); i++) {
+      fprintf (outf, "0x%02x-", b[i]);
+   }
+   fprintf (outf, "]");
 }
 
 static void a_pr_native (const atom_t *atom, size_t depth, FILE *outf)
@@ -263,6 +303,18 @@ static atom_t *a_dup_fptr (atom_t *dst, const atom_t *src)
    return dst;
 }
 
+static atom_t *a_dup_buffer (atom_t *dst, const atom_t *src)
+{
+   size_t nbytes = *(size_t *)src->data;
+
+   dst->data = malloc (nbytes + sizeof (size_t));
+   if (!dst->data)
+      return NULL;
+
+   memcpy (dst->data, src->data, nbytes + sizeof (size_t));
+   return dst;
+}
+
 static int a_cmp_list (const atom_t *lhs, const atom_t *rhs)
 {
    size_t lhs_len = atom_list_length (lhs),
@@ -318,8 +370,17 @@ static int a_cmp_float (const atom_t *lhs, const atom_t *rhs)
 
 static int a_cmp_fptr (const atom_t *lhs, const atom_t *rhs)
 {
-
    return lhs->data - rhs->data;
+}
+
+static int a_cmp_buffer (const atom_t *lhs, const atom_t *rhs)
+{
+   size_t nblhs = *(size_t *)lhs->data,
+          nbrhs = *(size_t *)rhs->data;
+
+   size_t nbytes = nblhs < nbrhs ? nblhs : nbrhs;
+
+   return memcmp (lhs->data, rhs->data, nbytes);
 }
 
 typedef struct atom_dispatch_t atom_dispatch_t;
@@ -343,6 +404,7 @@ static const atom_dispatch_t *atom_find_funcs (enum atom_type_t type)
 { atom_INT,    a_new_int,    a_del_nonlist, a_pr_int,    a_dup_int,    a_cmp_int    },
 { atom_FLOAT,  a_new_float,  a_del_nonlist, a_pr_float,  a_dup_float,  a_cmp_float  },
 { atom_FFI,    a_new_fptr,   NULL,          a_pr_ffi,    a_dup_fptr,   a_cmp_fptr   },
+{ atom_BUFFER, a_new_buffer, a_del_nonlist, a_pr_buffer, a_dup_buffer, a_cmp_buffer },
 { atom_NATIVE, a_new_fptr,   NULL,          a_pr_native, a_dup_fptr,   a_cmp_fptr   },
 { atom_UNKNOWN, NULL,        NULL,          NULL,        NULL,         NULL         },
    };

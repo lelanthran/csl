@@ -6,6 +6,11 @@
 (one (two '(three four five)           ; Everywhere
    "six seven" eight:nine ten=11))     ; Works well
 
+; Testing that the nil keyword works.
 nil
+
+; Testing byte-buffers
+
+|f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff|
 
 ; End on a comment
