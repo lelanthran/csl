@@ -62,5 +62,5 @@
 15. Need to make a generic function to check the paramcount and param type
    (where possible).
 
-16. rt_trap must take the args[] array as well, so that the current
-   expression can be displayed to the user.
+-- 16. rt_trap must take the args[] array as well, so that the current
+-- expression can be displayed to the user.
