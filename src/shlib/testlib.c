@@ -36,3 +36,32 @@ uint64_t testlib_big (char *str,
    return ret;
 }
 
+// Ordering smallest to largest makes the best structure to test with;
+// largest to smallest have most of the fields naturally aligned. Putting
+// a int8_t in between every field ensures that none of them are aligned.
+struct testlib_t {
+   int8_t   i81;
+   int16_t  i16;
+   int8_t   i82;
+   int32_t  i32;
+   int64_t  i83;
+   int64_t  i64;
+   uint8_t  buf[7];
+   int32_t  final;
+};
+
+uint64_t testlib_struct (struct testlib_t *ts)
+{
+   uint64_t ret = 0xc1c2c3c4c5c6c7c8;
+
+   printf ("In [%s]\n", __func__);
+   printf ("i81:     [0x%x]\n", ts->i81);
+   printf ("i82:     [0x%x]\n", ts->i82);
+   printf ("i83:     [0x%x]\n", ts->i83);
+   printf ("i16:     [0x%x]\n", ts->i16);
+   printf ("i32:     [0x%x]\n", ts->i32);
+   printf ("i64:     [0x%" PRIx64 "]\n", ts->i64);
+   printf ("i32:     [0x%x]\n", ts->final);
+
+   return ret;
+}
