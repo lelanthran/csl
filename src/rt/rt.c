@@ -167,12 +167,13 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, atom_t **
    args_array[0] = trap;
    size_t i = 0;
    while (args && args[i]) {
-      args_array[i+1] = extra[i];
+      args_array[i+1] = args[i];
       i++;
    }
-   while (extra && extra[i]) {
-      args_array[i+1] = extra[i];
-      i++;
+   size_t j = 0;
+   while (extra && extra[j]) {
+      args_array[i+1] = extra[j];
+      i++; j++;
    }
 
    ret = builtins_TRAP (rt, sym, (const atom_t **)args_array, nargs+1);

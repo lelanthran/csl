@@ -793,6 +793,7 @@ atom_t *builtins_DEFTYPE (rt_t *rt, const atom_t *sym, const atom_t **args, size
    if (nargs!=2) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
                                          args,
+                                         NULL,
                                          NULL);
    }
 
@@ -802,15 +803,17 @@ atom_t *builtins_DEFTYPE (rt_t *rt, const atom_t *sym, const atom_t **args, size
    if (atom_list_length (a_fields) != 2) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
                                          args,
+                                         NULL,
                                          NULL);
    }
 
    const atom_t *a_size = atom_list_index (a_fields, 0),
                 *a_alignment = atom_list_index (a_fields, 1);
 
-   if (a_size->type!=atom_INT || a_alignment!=atom_INT) {
+   if (a_size->type != atom_INT || a_alignment->type != atom_INT) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
                                          args,
+                                         NULL,
                                          NULL);
    }
 
