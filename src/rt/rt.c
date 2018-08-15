@@ -300,9 +300,18 @@ static const struct {
    { shlib_S_LONG_LONG, "LONG_LONG"   },
 };
 
-static const atom_t *rt_add_native_type (rt_t *rt,
-                                         const char *name,
-                                         shlib_type_t type)
+static int64_t g_highest_type_id = 0;
+
+int64_t rt_highest_type_id (void)
+{
+   return g_highest_type_id;
+}
+
+const atom_t *rt_add_native_type (rt_t *rt,
+                                  const char *name,
+                                  int64_t type_id,
+                                  int64_t size,
+                                  int64_t alignment)
 {
    bool error = true;
 
@@ -313,26 +322,26 @@ static const atom_t *rt_add_native_type (rt_t *rt,
    if (!val)
       goto errorexit;
 
-   if ((atom_list_ins_tail (val, atom_int_new (type)))==NULL)
+   if ((atom_list_ins_tail (val, atom_int_new (type_id)))==NULL)
       goto errorexit;
 
-   if (!(atom_list_ins_tail (val, atom_int_new (shlib_sizeof (type)))))
+   if (!(atom_list_ins_tail (val, atom_int_new (size))))
       goto errorexit;
 
-   // We put this in twice, sometime in the future I may need to store
-   // alignment separately from size. For now I assume that the alignment
-   // and size are the same.
-   if (!(atom_list_ins_tail (val, atom_int_new (shlib_sizeof (type)))))
+   if (!(atom_list_ins_tail (val, atom_int_new (alignment))))
       goto errorexit;
 
    ret = rt_symbol_add (rt->symbols, sym, val);
+
+   g_highest_type_id = g_highest_type_id < type_id ?
+                           type_id : g_highest_type_id;
 
    error = false;
 
 errorexit:
 
    if (error) {
-      atom_del (ret);
+      atom_del ((atom_t *)ret);
       ret = NULL;
    }
 
@@ -365,6 +374,7 @@ static struct {
    {  "bi_defun",       builtins_DEFUN       },
    {  "bi_defext",      builtins_DEFEXT      },
    {  "bi_defstruct",   builtins_DEFSTRUCT   },
+   {  "bi_deftype",     builtins_DEFTYPE     },
    {  "bi_funcall",     builtins_FUNCALL     },
    {  "bi_trap_set",    builtins_TRAP_SET    },
    {  "bi_trap_clear",  builtins_TRAP_CLEAR  },
@@ -471,8 +481,13 @@ rt_t *rt_new (void)
    }
 
    for (size_t i=0; i<sizeof g_native_types/sizeof g_native_types[0]; i++) {
+      // We put this in twice, sometime in the future I may need to store
+      // alignment separately from size. For now I assume that the alignment
+      // and size are the same.
       if (!(rt_add_native_type (ret, g_native_types[i].name,
-                                     g_native_types[i].type))) {
+                                     g_native_types[i].type,
+                                     shlib_sizeof (g_native_types[i].type),
+                                     shlib_sizeof (g_native_types[i].type)))) {
          goto errorexit;
       }
    }

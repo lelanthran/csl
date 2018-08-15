@@ -779,6 +779,34 @@ atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_
    return ret;
 }
 
+atom_t *builtins_DEFTYPE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   if (nargs!=2) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+   }
+
+   const atom_t *a_name = args[0],
+                *a_fields = args[1];
+
+   if (atom_list_length (a_fields) != 2) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+   }
+
+   const atom_t *a_size = atom_list_index (a_fields, 0),
+                *a_alignment = atom_list_index (a_fields, 1);
+
+   if (a_size->type!=atom_INT || a_alignment!=atom_INT) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"), NULL);
+   }
+
+   const char *name = atom_to_string (a_name);
+   int64_t type_id = rt_highest_type_id (),
+           size = *(int64_t *)a_size->data,
+           alignment = *(int64_t *)a_alignment->data;
+
+   return atom_dup (rt_add_native_type (rt, name, type_id, size, alignment));
+}
+
 atom_t *builtins_DEFSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    rt = rt;

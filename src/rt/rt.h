@@ -38,6 +38,11 @@ extern "C" {
    const atom_t *rt_add_native_func (rt_t *rt, const char *name,
                                                rt_builtins_fptr_t *fptr);
 
+   int64_t rt_highest_type_id (void);
+   const atom_t *rt_add_native_type (rt_t *rt, const char *name, int64_t type_id,
+                                                                 int64_t size,
+                                                                 int64_t alignment);
+
    const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
                                                rt_builtins_fptr_t *fptr);
 
