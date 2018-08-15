@@ -424,6 +424,7 @@ atom_t *builtins_FIRST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
    nargs = nargs;
    if (args[1]) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
                                          atom_new (atom_STRING, __func__),
                                          atom_new (atom_STRING, "Only one param allowed."),
                                          atom_new (atom_STRING, "Following param is extra."),
@@ -443,6 +444,7 @@ atom_t *builtins_REST (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
    nargs = nargs;
    if (args[1]) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
                                          atom_new (atom_STRING, __func__),
                                          atom_new (atom_STRING, "Only one param allowed."),
                                          atom_new (atom_STRING, "Following param is extra."),
@@ -476,6 +478,7 @@ atom_t *builtins_LENGTH (rt_t *rt, const atom_t *sym, const atom_t **args, size_
    nargs = nargs;
    if (args[1]) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
                                          atom_new (atom_STRING, __func__),
                                          atom_new (atom_STRING, "Only one param allowed."),
                                          atom_new (atom_STRING, "Following param is extra."),
@@ -521,6 +524,7 @@ atom_t *builtins_NALLOC (rt_t *rt, const atom_t *sym, const atom_t **args, size_
    if (nargs!=1) {
       return rt_trap_a (rt, (atom_t *)sym,
                             atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            args,
                             atom_array_dup (args));
    }
 
@@ -537,12 +541,14 @@ atom_t *builtins_NFREE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
    if (nargs!=1) {
       return rt_trap_a (rt, (atom_t *)sym,
                             atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            args,
                             atom_array_dup (args));
    }
 
    if (args[0]->type != atom_BUFFER) {
       return rt_trap_a (rt, (atom_t *)sym,
                             atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                            args,
                             atom_array_dup (args));
    }
 
@@ -596,6 +602,7 @@ atom_t *builtins_DEFINE (rt_t *rt, const atom_t *sym, const atom_t **args, size_
                        "unterminated list.\n", nargs);
       return rt_trap_a (rt, (atom_t *)sym,
                             atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                            args,
                             atom_array_dup (args));
    }
 
@@ -762,7 +769,9 @@ atom_t *builtins_DEFUN (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
 atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    if (nargs!=2) {
-      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         NULL);
    }
 
    atom_t *tmp = (atom_t *)args[0];
@@ -782,21 +791,27 @@ atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_
 atom_t *builtins_DEFTYPE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    if (nargs!=2) {
-      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         NULL);
    }
 
    const atom_t *a_name = args[0],
                 *a_fields = args[1];
 
    if (atom_list_length (a_fields) != 2) {
-      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"), NULL);
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         NULL);
    }
 
    const atom_t *a_size = atom_list_index (a_fields, 0),
                 *a_alignment = atom_list_index (a_fields, 1);
 
    if (a_size->type!=atom_INT || a_alignment!=atom_INT) {
-      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"), NULL);
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         args,
+                                         NULL);
    }
 
    const char *name = atom_to_string (a_name);
@@ -1152,6 +1167,7 @@ atom_t *builtins_WHILE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
 {
    if (nargs < 3) {
       return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
                                          atom_new (atom_STRING, __func__),
                                          atom_new (atom_STRING, "Three params only allowed."),
                                          NULL);

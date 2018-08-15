@@ -144,12 +144,15 @@ const atom_t *rt_set_native_trap (rt_t *rt, const char *name,
    return add_native_func (rt->traps, name, fptr);
 }
 
-atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
+atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, atom_t **extra)
 {
    atom_t *ret = NULL;
    atom_t **args_array = NULL;
 
    size_t nargs = 0;
+   for (size_t i=0; extra && extra[i]; i++)
+      nargs++;
+
    for (size_t i=0; args && args[i]; i++)
       nargs++;
 
@@ -162,8 +165,14 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
    memset (args_array, 0, sizeof *args_array * (nargs + 2));
 
    args_array[0] = trap;
-   for (size_t i=0; args && args[i]; i++) {
-      args_array[i+1] = args[i];
+   size_t i = 0;
+   while (args && args[i]) {
+      args_array[i+1] = extra[i];
+      i++;
+   }
+   while (extra && extra[i]) {
+      args_array[i+1] = extra[i];
+      i++;
    }
 
    ret = builtins_TRAP (rt, sym, (const atom_t **)args_array, nargs+1);
@@ -172,45 +181,45 @@ atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args)
 
    atom_del (trap);
 
-   for (size_t i=0; args && args[i]; i++) {
-      atom_del (args[i]);
+   for (size_t i=0; extra && extra[i]; i++) {
+      atom_del (extra[i]);
    }
-   free (args);
+   free (extra);
 
    return ret;
 }
 
-atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap)
+atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, va_list ap)
 {
    bool error = true;
    size_t nargs = 0;
-   atom_t **args = NULL;
+   atom_t **extra = NULL;
    atom_t *ret = NULL;
    atom_t *arg = NULL;
 
    while ((arg = va_arg (ap, atom_t *))!=NULL) {
       nargs++;
-      atom_t **tmp = realloc (args, sizeof *tmp * (nargs + 1));
+      atom_t **tmp = realloc (extra, sizeof *tmp * (nargs + 1));
       if (!tmp) {
          fprintf (stderr, "Fatal OOM error in trap handling\n");
          atom_print (trap, 0, stderr);
          exit (-1);
       }
-      args = tmp;
+      extra = tmp;
 
-      args[nargs - 1] = arg;
-      args[nargs] = 0;
+      extra[nargs - 1] = arg;
+      extra[nargs] = 0;
    }
 
-   if (!(ret = rt_trap_a (rt, sym, trap, args)))
+   if (!(ret = rt_trap_a (rt, sym, trap, args, extra)))
       goto errorexit;
 
    error = false;
 
 errorexit:
 
-   for (size_t i=0; args && args[i]; i++) {
-      atom_del (args[i]);
+   for (size_t i=0; extra && extra[i]; i++) {
+      atom_del (extra[i]);
    }
 
    if (error) {
@@ -221,14 +230,14 @@ errorexit:
    return ret;
 }
 
-atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...)
+atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, ...)
 {
    va_list ap;
    atom_t *ret = NULL;
 
-   va_start (ap, trap);
+   va_start (ap, args);
 
-   ret = rt_trap_v (rt, sym, trap, ap);
+   ret = rt_trap_v (rt, sym, trap, args, ap);
 
    va_end (ap);
 
@@ -753,7 +762,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
    atom_t *tmp = NULL;
 
    tmp = rt_eval (rt, sym, ret_type);
-   atom_t *tmp_rt = atom_list_index (tmp, 0);
+   const atom_t *tmp_rt = atom_list_index (tmp, 0);
 
    if (!eval_args)
       goto errorexit;
@@ -777,6 +786,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
       char tmp1[38];
       sprintf (tmp1, "nargs wrong: %zu/%zu", nargs_found, nargs_expected);
       trap = rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         (atom_t **)args,
                                          atom_new (atom_STRING, tmp1),
                                          NULL);
       goto errorexit;
@@ -796,16 +806,17 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
                      atom_list_index ((atom_t *)args_expected, i - 1);
 
       tmp = rt_eval (rt, sym, arg_expected);
-      atom_t *tmp_expected = atom_list_index (tmp, 0);
+      const atom_t *tmp_expected = atom_list_index (tmp, 0);
 
       if (check_type_compatible (arg_found, tmp_expected)!=true) {
          trap = rt_trap (rt, (atom_t *)sym,
                              atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                             (atom_t **)args,
                              atom_new (atom_STRING, "Arg mismatch"),
                              atom_dup (arg_found),
                              atom_dup (arg_expected),
                              NULL);
-         atom_del (tmp_expected);
+         atom_del ((atom_t *)tmp_expected);
          goto errorexit;
       }
 
@@ -817,6 +828,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
       if (fargs[i-1].type==shlib_NONE) {
          trap = rt_trap (rt, (atom_t *)sym,
                              atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                             (atom_t **)args,
                              atom_dup (arg_found),
                              NULL);
          goto errorexit;
@@ -836,6 +848,7 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
    if (errcode) {
       trap = rt_trap (rt, (atom_t *)sym,
                           atom_new (atom_SYMBOL, "TRAP_FFI"),
+                          (atom_t **)args,
                           atom_dup (atom_list_index (fspec, 0)),
                           atom_dup (atom_list_index (fspec, 1)),
                           NULL);
@@ -1014,6 +1027,7 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
       atom_print (atom, 0, stderr);
       tmp  = rt_trap (rt, (atom_t *)sym,
                           atom_new (atom_SYMBOL, "TRAP_EVALERR"),
+                          NULL,
                           atom_dup (atom), NULL);
    }
 

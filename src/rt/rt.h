@@ -51,9 +51,9 @@ extern "C" {
    //
    // The variadic functions each look for successive atom_t * and stop
    // when they encounter a NULL.
-   atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args);
-   atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, va_list ap);
-   atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, ...);
+   atom_t *rt_trap_a (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, atom_t **extra);
+   atom_t *rt_trap_v (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, va_list ap);
+   atom_t *rt_trap (rt_t *rt, atom_t *sym, atom_t *trap, atom_t **args, ...);
 
    void rt_warn_v (rt_t *rt, const atom_t *sym, atom_t *trap, va_list ap);
    void rt_warn (rt_t *rt, const atom_t *sym, atom_t *warning, ...);
