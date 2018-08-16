@@ -829,11 +829,114 @@ atom_t *builtins_DEFSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, si
 {
    rt = rt;
    sym = sym;
-   args = args;
-   nargs = nargs;
 
-   // TODO:
-#warning TODO: This is not yet implemented.
+   if (nargs!=2) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         atom_int_new (nargs),
+                                         NULL);
+   }
+
+   if (args[0]->type != atom_SYMBOL) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         args,
+                                         atom_dup (args[0]),
+                                         NULL);
+   }
+
+   if (args[1]->type != atom_LIST) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         args,
+                                         atom_dup (args[0]),
+                                         NULL);
+   }
+
+   const atom_t *name = args[0];
+   const atom_t *fields = args[1];
+
+   size_t len = atom_list_length (fields);
+
+   for (size_t i=0; i<len; i++) {
+      const atom_t *rec = atom_list_index (fields, i);
+      if (rec->type != atom_LIST) {
+         return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                 args,
+                                 atom_dup (rec),
+                                 NULL);
+      }
+      size_t rec_len = atom_list_length (rec);
+
+      if (rec_len < 2) {
+         return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                 args,
+                                 NULL,
+                                 NULL);
+      }
+   }
+
+
+   atom_t *ret = atom_dup (rt_symbol_add (rt->symbols, name, fields));
+
+   return ret;
+}
+
+atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
+{
+   if (nargs!=2) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         atom_int_new (nargs),
+                                         NULL);
+   }
+
+   const atom_t *sdef = rt_eval (rt, sym, args[0]);
+   if (!sdef) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_BADPARAM"),
+                                         args,
+                                         atom_dup (sdef),
+                                         NULL);
+   }
+
+   size_t nfields = atom_list_length (sdef);
+   nargs = atom_list_length (args[1]);
+
+   if (nargs!=nfields) {
+      return rt_trap (rt, (atom_t *)sym, atom_new (atom_SYMBOL, "TRAP_PARAMCOUNT"),
+                                         args,
+                                         atom_dup (sdef),
+                                         atom_int_new (nargs),
+                                         atom_int_new (nfields),
+                                         atom_dup (sdef),
+                                         atom_dup (sdef),
+                                         atom_dup (sdef),
+                                         NULL);
+   }
+
+   int64_t total_length = 0;
+   int64_t prev_align = 0;
+   int64_t prev_length = 0;
+   for (size_t i=0; i<nfields; i++) {
+      const atom_t *field = atom_list_index (sdef, i);
+      const atom_t *field_entry = rt_eval (rt, sym, atom_list_index (field, 0));
+      int64_t field_length = *(int64_t *)(atom_list_index (field_entry, 1)->data);
+      int64_t field_align = *(int64_t *)(atom_list_index (field_entry, 2)->data);
+      int64_t offset = prev_length;
+
+      while (offset % field_align)
+         offset++;
+
+      total_length += offset;
+      prev_length = field_length;
+      prev_align = field_align;
+
+      printf ("=====================\n");
+      atom_print (field_entry, 0, stdout);
+      printf (": %" PRIi64 ":%" PRIi64 "\n", field_length, offset);
+   }
+
+   total_length += prev_length;
+
+   printf ("===================== %" PRIi64 "=====================\n", total_length);
    return NULL;
 }
 

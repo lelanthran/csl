@@ -384,6 +384,7 @@ static struct {
    {  "bi_defun",       builtins_DEFUN       },
    {  "bi_defext",      builtins_DEFEXT      },
    {  "bi_defstruct",   builtins_DEFSTRUCT   },
+   {  "bi_newstruct",   builtins_NEWSTRUCT   },
    {  "bi_deftype",     builtins_DEFTYPE     },
    {  "bi_funcall",     builtins_FUNCALL     },
    {  "bi_trap_set",    builtins_TRAP_SET    },

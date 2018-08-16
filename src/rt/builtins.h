@@ -39,6 +39,7 @@ atom_t *builtins_DEFUN (rt_t *rt, const atom_t *sym, const atom_t **args, size_t
 atom_t *builtins_DEFEXT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_DEFTYPE (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_DEFSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
+atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);
 
 atom_t *builtins_PLUS (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs);

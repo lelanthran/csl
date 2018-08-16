@@ -41,12 +41,19 @@ uint64_t testlib_big (char *str,
 // a int8_t in between every field ensures that none of them are aligned.
 struct testlib_t {
    int8_t   i81;
+
    int16_t  i16;
+
    int8_t   i82;
+
    int32_t  i32;
-   int64_t  i83;
+
+   int8_t   i83;
+
    int64_t  i64;
+
    uint8_t  buf[7];
+
    int32_t  final;
 };
 
@@ -62,6 +69,10 @@ uint64_t testlib_struct (struct testlib_t *ts)
    printf ("i32:     [0x%x]\n", ts->i32);
    printf ("i64:     [0x%" PRIx64 "]\n", ts->i64);
    printf ("i32:     [0x%x]\n", ts->final);
+
+   for (size_t i=0; i<sizeof ts->buf; i++) {
+      printf ("0x%02x", ts->buf[i]);
+   }
 
    return ret;
 }
