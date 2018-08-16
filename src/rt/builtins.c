@@ -48,8 +48,14 @@ atom_t *builtins_TRAP_CLEAR (rt_t *rt, const atom_t *sym, const atom_t **args, s
 
 atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
+   static size_t depth = 0;
    sym = sym;
    nargs = nargs;
+
+   if (depth++ > 3) {
+      fprintf (stderr, "Rcursive trapping, aborting\n");
+      exit (-1);
+   }
 
    atom_t *ret = NULL;
    atom_t *ZERO = atom_new (atom_INT, "0");
@@ -82,6 +88,7 @@ atom_t *builtins_TRAP (rt_t *rt, const atom_t *sym, const atom_t **args, size_t 
             atom_list_ins_tail (tmp, atom_dup (args[i]));
          }
          ret = rt_eval (rt, sym, tmp);
+         // ret = atom_dup (tmp);
          atom_del (tmp);
       } else {
          ret = rt_eval (rt, sym, atom_list_index (trap, 1));
@@ -912,6 +919,15 @@ atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, si
                                          NULL);
    }
 
+   int64_t *offsets = malloc ((sizeof *offsets) * (nfields + 1));
+   int64_t *lengths = malloc ((sizeof *lengths) * (nfields + 1));
+   if (!offsets || !lengths) {
+      fprintf (stderr, "OOM\n");
+      return NULL;
+   }
+   memset (offsets, 0, (sizeof *offsets) * (nfields + 1));
+   memset (lengths, 0, (sizeof *lengths) * (nfields + 1));
+
    int64_t total_length = 0;
    int64_t prev_align = 0;
    int64_t prev_length = 0;
@@ -920,24 +936,42 @@ atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, si
       const atom_t *field_entry = rt_eval (rt, sym, atom_list_index (field, 0));
       int64_t field_length = *(int64_t *)(atom_list_index (field_entry, 1)->data);
       int64_t field_align = *(int64_t *)(atom_list_index (field_entry, 2)->data);
+
+      atom_del (field_entry);
+
       int64_t offset = prev_length;
 
       while (offset % field_align)
          offset++;
 
+      offsets[i] = offset;
+      lengths[i] = field_length;
+
       total_length += offset;
       prev_length = field_length;
       prev_align = field_align;
 
-      printf ("=====================\n");
-      atom_print (field_entry, 0, stdout);
       printf (": %" PRIi64 ":%" PRIi64 "\n", field_length, offset);
    }
 
    total_length += prev_length;
 
+   atom_t *ret = atom_buffer_new (NULL, total_length);
+
+   for (size_t i=0; i<nfields; i++) {
+      memcpy (atom_buffer_offset (ret, offsets[i]),
+              atom_list_index (args[1], i)->data,
+              lengths[i]);
+   }
+
    printf ("===================== %" PRIi64 "=====================\n", total_length);
-   return NULL;
+
+   free (offsets);
+   free (lengths);
+
+   atom_del (sdef);
+
+   return ret;
 }
 
 atom_t *builtins_FUNCALL (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)

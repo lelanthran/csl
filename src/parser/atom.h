@@ -71,6 +71,8 @@ extern "C" {
    atom_t *atom_float_new (double d);
    atom_t *atom_buffer_new (void *buf, size_t len);
 
+   void *atom_buffer_offset (atom_t *atom, size_t offs);
+
    const char *atom_to_string (const atom_t *atom);
 
    atom_t **atom_array_dup (const atom_t **atoms);

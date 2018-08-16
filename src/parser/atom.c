@@ -774,6 +774,16 @@ atom_t *atom_buffer_new (void *buf, size_t len)
    return ret;
 }
 
+void *atom_buffer_offset (atom_t *atom, size_t offs)
+{
+   if (!atom || atom->type!=atom_BUFFER)
+      return NULL;
+
+   uint8_t *b = atom->data;
+   b = &b[sizeof (size_t) + offs];
+   return b;
+}
+
 const char *atom_to_string (const atom_t *atom)
 {
    if (atom->type==atom_LIST) {

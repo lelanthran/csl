@@ -836,6 +836,9 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
          goto errorexit;
       }
 
+      if (fargs[i-1].type >= shlib_POINTER)
+         fargs[i-1].type = shlib_POINTER;
+
       fargs[i-1].data = promote_atom_to_native_data (arg_found, fargs[i-1].type);
 
       atom_list_ins_tail (eval_args, (atom_t *)arg_found);
@@ -1030,7 +1033,7 @@ atom_t *rt_eval (rt_t *rt, const atom_t *sym, const atom_t *atom)
       tmp  = rt_trap (rt, (atom_t *)sym,
                           atom_new (atom_SYMBOL, "TRAP_EVALERR"),
                           NULL,
-                          atom_dup (atom), NULL);
+                          NULL);
    }
 
    if (!tmp) {
