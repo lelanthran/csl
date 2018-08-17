@@ -14,6 +14,16 @@
 
 #define WEXPECTED_LIST  ("Expected list expression")
 
+void dumphex (void *buf, int64_t len)
+{
+   uint8_t *b = buf;
+   while (len--) {
+      printf ("0x%02x-", *b++);
+   }
+
+   printf ("\n");
+}
+
 atom_t *builtins_TRAP_SET (rt_t *rt, const atom_t *sym, const atom_t **args, size_t nargs)
 {
    sym = sym;
@@ -931,6 +941,7 @@ atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, si
    int64_t total_length = 0;
    int64_t prev_align = 0;
    int64_t prev_length = 0;
+   size_t offset = 0;
    for (size_t i=0; i<nfields; i++) {
       const atom_t *field = atom_list_index (sdef, i);
       const atom_t *field_entry = rt_eval (rt, sym, atom_list_index (field, 0));
@@ -939,37 +950,42 @@ atom_t *builtins_NEWSTRUCT (rt_t *rt, const atom_t *sym, const atom_t **args, si
 
       atom_del (field_entry);
 
-      int64_t offset = prev_length;
-
-      while (offset % field_align)
+      while (field_align && offset % field_align)
          offset++;
 
       offsets[i] = offset;
       lengths[i] = field_length;
 
-      total_length += offset;
-      prev_length = field_length;
-      prev_align = field_align;
+      offset += field_length;
 
-      printf (": %" PRIi64 ":%" PRIi64 "\n", field_length, offset);
+      prev_align = field_align;
+      prev_length = field_length;
+
+      printf (": %" PRIi64 ":%" PRIi64 "\n", field_length, offsets[i]);
    }
 
-   total_length += prev_length;
+   total_length = offset + prev_length;
 
    atom_t *ret = atom_buffer_new (NULL, total_length);
 
+   offset = 0;
    for (size_t i=0; i<nfields; i++) {
       memcpy (atom_buffer_offset (ret, offsets[i]),
               atom_list_index (args[1], i)->data,
               lengths[i]);
+
+      printf ("-------------------\n[%zu][%" PRIi64 "]\n", offsets[i], lengths[i]);
+      dumphex (atom_list_index (args[1], i)->data, lengths[i]);
    }
 
-   printf ("===================== %" PRIi64 "=====================\n", total_length);
+   printf ("===================== %" PRIi64 " =====================\n", total_length);
 
    free (offsets);
    free (lengths);
 
    atom_del (sdef);
+
+   atom_print (ret, 0, stdout);
 
    return ret;
 }

@@ -645,6 +645,8 @@ static shlib_type_t promote_atom_to_native_type (const atom_t *src)
 static void *promote_atom_to_native_data (const atom_t *src,
                                                 shlib_type_t type)
 {
+   uint8_t *b = NULL;
+   size_t blen = 0;
    void *ret = malloc (8);
    if (!ret)
       return NULL;
@@ -675,7 +677,29 @@ static void *promote_atom_to_native_data (const atom_t *src,
    case shlib_U_INT:       *(unsigned int *)ret = *(int64_t *)src->data;       break;
    case shlib_U_LONG:      *(unsigned long *)ret = *(int64_t *)src->data;      break;
    case shlib_U_LONG_LONG: *(unsigned long long *)ret = *(int64_t *)src->data; break;
-   case shlib_POINTER:     free (ret); ret = (void *)&src->data;                       break;
+   case shlib_POINTER:     // Tricky
+                           blen = *(size_t *)src->data;
+                           b = src->data;
+                           b = &b[sizeof (size_t)];
+
+                           void **tmp = NULL;
+                           if (!(tmp = malloc (sizeof *tmp))) {
+                              fprintf (stderr, "OOM\n");
+                              exit (-1);
+                           }
+                           memset (tmp, 0, sizeof *tmp);
+
+                           tmp[0] = malloc (blen);
+                           if (!tmp[0]) {
+                              fprintf (stderr, "OOM\n");
+                              exit (-1);
+                           }
+                           memcpy (tmp[0], b, blen);
+
+                           free (ret); ret = tmp;
+
+                           printf ("[%p]\n[%p]\n", ret, b);
+                           break;
    }
 
    if (type==shlib_FLOAT) {
@@ -879,8 +903,10 @@ errorexit:
    }
 
    for (size_t i=0; fargs[i].type; i++) {
-      if (fargs[i].type==shlib_POINTER)
-         continue;
+      if (fargs[i].type==shlib_POINTER) {
+         void **tmp = fargs[i].data;
+         free (tmp[0]);
+      }
 
       free ((void *)fargs[i].data);
    }
