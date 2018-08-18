@@ -106,8 +106,11 @@ allow scripts to:
 1. Invoke the built-in debugger to examine program state when a trap is
    unhandled.
 1. Call functions in external library.dll or library.so files, subject to
-   some restrictions (for example, cannot pass arbitrary-length buffers to
-   the external functions, such as `fread`).
+   some restrictions (for example, while byte buffers can be passed to and
+   from external library functions, there are as yet no primitives to work
+   on these byte buffers).
+1. Define `C` style `structs` so that the scripts can interface to many
+   `C` libraries that take structures,
 
 Admittedly that's not an impressive list of capabilities, but I did warn
 you to use something else!
@@ -123,13 +126,9 @@ of critical functionality. I'd advise (again) going with an alternative.
 
 Nevertheless, if you do find yourself messing with this here's what you
 are not going to find (yet):
-1. Looping capability (can be faked with recursion if primitives `first`
-   and `rest` existed),
-1. Primitives to enable recursing across a list (superfluous if looping
-   constructs existed),
-1. Creating byte-buffers needed for interfacing to many `C` libraries,
-1. Defining `C` style `structs` so that the scripts can interface to many
-   `C` libraries that take structures,
+1. Looping capability is limited to `while` loops only.
+1. Reading and writing the contents of byte buffers which are needed for
+   interfacing to many `C` libraries,
 1. A garbage collection strategy. Currently there is no need for one as
    the script executes strictly top-down in the tree, and each return from
    an expression cleans up after itself,
