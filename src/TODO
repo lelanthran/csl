@@ -35,12 +35,16 @@
 --
 --  current list then consists of (test 7)
 
-6. Add in some facility for error handling, possibly some variation on
-   signals (signals emulated in program memory with setjmp/longjmp sounds
-   like a good idea).
+-- 6. Add in some facility for error handling, possibly some variation on
+--   signals (signals emulated in program memory with setjmp/longjmp sounds
+--   like a good idea).
 
-7. Tokeniser should be able to tokenise input in a buffer. Parser must
-   signal errors if it runs out of tokens (unterminated list).
+-- 7. Tokeniser should be able to tokenise input in a buffer. Parser must
+--   signal errors if it runs out of tokens (unterminated list).
+--   UPDATE: Tokeniser can tokenise input from a buffer, but parser errors
+--   are not being signalled. This does nto seem necessary now as atoms have
+--   their input filename/line number attached that can be displayed on
+--   error.
 
 -- 8. Tokeniser needs to ignore comments.
 
@@ -50,12 +54,15 @@
 10. Must change all error display/handling in builtins.c to use the new
    trap mechanism.
 
-11. Add in looping constructs (while, for, doloop, etc)
+-- 11. Add in looping constructs (while, for, doloop, etc)
+--    UPDATE: Added in while looping construct.
 
-12. Need easy way to define structs/types for ffi.
+-- 12. Need easy way to define structs/types for ffi.
 
 13. Complete the byte-buffer implementation so that native C functions an
    use it.
+   UPDATE: Acutal buffer implementation is complete, functions needed for
+   callers from CSL to read/write buffers.
 
 14. Check that quotes themselves can be quoted (is this even necessary?)
 
@@ -64,3 +71,4 @@
 
 -- 16. rt_trap must take the args[] array as well, so that the current
 -- expression can be displayed to the user.
+
