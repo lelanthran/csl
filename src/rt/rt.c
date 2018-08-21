@@ -642,11 +642,14 @@ static shlib_type_t promote_atom_to_native_type (const atom_t *src)
    return 0;
 }
 
+#define FLAG_TREAT_AS_STRING        (0x01 << 1)
+
 static void *promote_atom_to_native_data (const atom_t *src,
-                                                shlib_type_t type)
+                                                shlib_type_t type,
+                                                uint8_t flags)
 {
    uint8_t *b = NULL;
-   size_t blen = 0;
+   size_t blen = 0, offset = 0;
    void *ret = malloc (8);
    if (!ret)
       return NULL;
@@ -678,9 +681,14 @@ static void *promote_atom_to_native_data (const atom_t *src,
    case shlib_U_LONG:      *(unsigned long *)ret = *(int64_t *)src->data;      break;
    case shlib_U_LONG_LONG: *(unsigned long long *)ret = *(int64_t *)src->data; break;
    case shlib_POINTER:     // Tricky
-                           blen = *(size_t *)src->data;
+                           blen = flags & FLAG_TREAT_AS_STRING ?
+                                    strlen (src->data) + 1 :
+                                    *(size_t *)src->data;
+                           offset = flags & FLAG_TREAT_AS_STRING ?
+                                    0 :
+                                    sizeof (size_t);
                            b = src->data;
-                           b = &b[sizeof (size_t)];
+                           b = &b[offset];
 
                            void **tmp = NULL;
                            if (!(tmp = malloc (sizeof *tmp))) {
@@ -691,8 +699,8 @@ static void *promote_atom_to_native_data (const atom_t *src,
 
                            tmp[0] = malloc (blen);
                            if (!tmp[0]) {
-                              fprintf (stderr, "OOM\n");
-                              exit (-1);
+                              fprintf (stderr, "OOM (%zu)\n", blen);
+                              return NULL;
                            }
                            memcpy (tmp[0], b, blen);
 
@@ -863,7 +871,12 @@ static atom_t *rt_funcall_ffi (rt_t *rt, const atom_t *sym,
       if (fargs[i-1].type >= shlib_POINTER)
          fargs[i-1].type = shlib_POINTER;
 
-      fargs[i-1].data = promote_atom_to_native_data (arg_found, fargs[i-1].type);
+      uint8_t flags = 0;
+      if (fargs[i-1].type == shlib_POINTER && (arg_found->type == atom_STRING ||
+                                              (arg_found->type == atom_SYMBOL))) {
+         flags |= FLAG_TREAT_AS_STRING;
+      }
+      fargs[i-1].data = promote_atom_to_native_data (arg_found, fargs[i-1].type, flags);
 
       atom_list_ins_tail (eval_args, (atom_t *)arg_found);
    }
